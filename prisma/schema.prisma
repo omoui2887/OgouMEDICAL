@@ -1,0 +1,243 @@
+// ============================================================
+// MediSaaS CI — Schéma de base de données multi-tenant
+// Plateforme de gestion médicale SaaS pour la Côte d'Ivoire
+// Conformité : Loi n°2013-450 (protection données) + ARTCI
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------
+// TENANT — Cabinet ou clinique (isolation logique par tenantId)
+// ------------------------------------------------------------
+model Tenant {
+  id            String   @id @default(cuid())
+  name          String   // Nom du cabinet
+  slug          String   @unique // ex: "clinique-plateau"
+  type          String   @default("cabinet") // cabinet | clinique
+  city          String   @default("Abidjan")
+  district      String?  // Commune: Cocody, Plateau, Yopougon...
+  phone         String?
+  email         String?
+  address       String?
+  plan          String   @default("essentiel") // essentiel | pro | entreprise
+  status        String   @default("actif") // actif | suspendu | inactif
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  users         User[]
+  patients      Patient[]
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  invoices      Invoice[]
+  consultations Consultation[]
+}
+
+// ------------------------------------------------------------
+// UTILISATEURS & RÔLES
+// super_admin | admin_cabinet | medecin | secretaire | patient | comptable
+// ------------------------------------------------------------
+model User {
+  id            String   @id @default(cuid())
+  tenantId      String?
+  email         String   @unique
+  name          String
+  role          String   @default("secretaire")
+  phone         String?
+  specialty     String?  // Spécialité médicale
+  avatar        String?
+  licenseNumber String?  // Numéro d'ordre des médecins (Côte d'Ivoire)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
+  appointments  Appointment[] @relation("doctorAppointments")
+  prescriptions Prescription[]
+  consultations Consultation[]
+}
+
+// ------------------------------------------------------------
+// PATIENT — Dossier Patient Numérique (DPN)
+// ------------------------------------------------------------
+model Patient {
+  id            String   @id @default(cuid())
+  tenantId      String
+  code          String   // Code patient unique au cabinet
+  firstName     String
+  lastName      String
+  gender        String?  // M | F
+  birthDate     DateTime?
+  phone         String?
+  email         String?
+  address       String?
+  bloodType     String?  // A+, A-, B+, B-, AB+, AB-, O+, O-
+  weight        Float?   // kg
+  height        Float?   // cm
+  allergies     String?  // JSON string des allergies
+  chronicConditions String? // JSON string
+  emergencyContact String?
+  insuranceProvider String? // CNPS, mutuelle...
+  insuranceNumber   String?
+  status        String   @default("actif")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  invoices      Invoice[]
+  consultations Consultation[]
+}
+
+// ------------------------------------------------------------
+// RENDEZ-VOUS (Prise de rendez-vous en ligne)
+// ------------------------------------------------------------
+model Appointment {
+  id          String   @id @default(cuid())
+  tenantId    String
+  patientId   String
+  doctorId    String
+  date        DateTime
+  duration    Int      @default(30) // minutes
+  reason      String   // Motif de consultation
+  type        String   @default("presentiel") // presentiel | teleconsultation
+  status      String   @default("planifie") // planifie | confirme | en_cours | termine | annule | absent
+  notes       String?
+  roomUrl     String?  // Lien téléconsultation Daily.co
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  doctor      User     @relation("doctorAppointments", fields: [doctorId], references: [id])
+  consultation Consultation?
+}
+
+// ------------------------------------------------------------
+// CONSULTATION — Compte-rendu médical
+// ------------------------------------------------------------
+model Consultation {
+  id           String   @id @default(cuid())
+  tenantId     String
+  appointmentId String? @unique
+  patientId    String
+  doctorId     String
+  date         DateTime @default(now())
+  symptoms     String   // Symptômes / motif
+  diagnosis    String   // Diagnostic
+  treatment    String   // Traitement / conduite à tenir
+  vitalsTemp   Float?   // Température °C
+  vitalsTension String? // Tension: 12/8
+  vitalsPulse  Int?     // Poussée bpm
+  vitalsWeight Float?   // Poids kg
+  notes        String?
+  createdAt    DateTime @default(now())
+
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
+  appointment  Appointment? @relation(fields: [appointmentId], references: [id])
+  patient      Patient    @relation(fields: [patientId], references: [id])
+  doctor       User       @relation(fields: [doctorId], references: [id])
+  prescriptions Prescription[]
+}
+
+// ------------------------------------------------------------
+// ORDONNANCE
+// ------------------------------------------------------------
+model Prescription {
+  id            String   @id @default(cuid())
+  tenantId      String
+  patientId     String
+  doctorId      String
+  consultationId String?
+  number        String   // Numéro unique
+  date          DateTime @default(now())
+  medications   String   // JSON: [{name, dosage, frequency, duration, instructions}]
+  validityDays  Int      @default(30)
+  status        String   @default("active") // active | expiree | annulee
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  tenant        Tenant       @relation(fields: [tenantId], references: [id])
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  doctor        User         @relation(fields: [doctorId], references: [id])
+  consultation  Consultation? @relation(fields: [consultationId], references: [id])
+}
+
+// ------------------------------------------------------------
+// FACTURATION & PAIEMENTS MOBILE MONEY
+// ------------------------------------------------------------
+model Invoice {
+  id          String   @id @default(cuid())
+  tenantId    String
+  patientId   String
+  number      String   // Numéro de facture
+  date        DateTime @default(now())
+  dueDate     DateTime?
+  items       String   // JSON: [{description, quantity, unitPrice}]
+  subtotal    Int      // FCFA
+  tax         Int      @default(0) // FCFA
+  total       Int      // FCFA
+  status      String   @default("impayee") // impayee | payee | partielle | annulee
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  payments    Payment[]
+}
+
+model Payment {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  amount      Int      // FCFA
+  method      String   // orange_money | wave | mtn_money | card | cash
+  provider    String?  // cinetpay transaction id
+  reference   String?  // Référence paiement
+  status      String   @default("reussi") // en_attente | reussi | echoue | rembourse
+  phone       String?  // Numéro Mobile Money
+  payerName   String?
+  date        DateTime @default(now())
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+// ------------------------------------------------------------
+// ABONNEMENT SaaS (plans)
+// ------------------------------------------------------------
+model Subscription {
+  id          String   @id @default(cuid())
+  tenantId    String   @unique
+  plan        String   // essentiel | pro | entreprise
+  status      String   @default("actif") // actif | suspendu | resilie | essai
+  billingCycle String  @default("mensuel") // mensuel | annuel
+  amount      Int      // FCFA
+  seats       Int      @default(5) // Nombre d'utilisateurs
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  paymentMethod String? // orange_money | wave | mtn_money | card
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ------------------------------------------------------------
+// JOURNAL D'AUDIT (conformité Loi 2013-450)
+// ------------------------------------------------------------
+model AuditLog {
+  id          String   @id @default(cuid())
+  tenantId    String?
+  userId      String?
+  action      String   // ex: "patient.view", "prescription.create"
+  entity      String?  // patient, prescription, invoice...
+  entityId    String?
+  ip          String?
+  userAgent   String?
+  metadata    String?  // JSON
+  createdAt   DateTime @default(now())
+}
