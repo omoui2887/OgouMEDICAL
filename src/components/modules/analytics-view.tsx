@@ -62,10 +62,17 @@ export function AnalyticsView() {
           <p className="text-sm text-muted-foreground">Indicateurs de performance · {TENANT.name}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => toast.success("Rapport PDF généré")}>
+          <Button variant="outline" size="sm" onClick={() => {
+            window.print();
+            toast.success("Rapport PDF généré", { description: "Utilisez 'Imprimer → Enregistrer en PDF'" });
+          }}>
             <Download className="mr-2 h-4 w-4" /> Export PDF
           </Button>
-          <Button variant="outline" size="sm" onClick={() => toast.success("Export Excel prêt")}>
+          <Button variant="outline" size="sm" onClick={() => {
+            // Export CSV des patients
+            window.location.href = "/api/patients/export";
+            toast.success("Export Excel prêt", { description: "Téléchargement du fichier CSV..." });
+          }}>
             <Download className="mr-2 h-4 w-4" /> Export Excel
           </Button>
         </div>

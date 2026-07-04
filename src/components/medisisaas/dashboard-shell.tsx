@@ -22,6 +22,7 @@ import {
   Settings, HelpCircle, Moon, Sun, Plus, ShieldCheck, Wifi,
 } from "lucide-react";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 function ModuleNavItem({
   moduleKey,
@@ -206,7 +207,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Wifi className="h-3 w-3" />
               {TENANT.name}
             </div>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" onClick={() => { toast.info("Notifications", { description: "5 RDV à confirmer, 2 paiements reçus, 3 résultats d'analyse disponibles" }); }}>
               <Bell className="h-4 w-4" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-orange-500" />
             </Button>

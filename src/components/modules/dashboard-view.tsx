@@ -13,6 +13,8 @@ import {
   CalendarCheck, Users, Wallet, FileText, TrendingUp, TrendingDown,
   ArrowUpRight, Stethoscope, Clock, Activity, type LucideIcon,
 } from "lucide-react";
+import { useAppStore } from "@/lib/store";
+import { toast } from "sonner";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -102,10 +104,10 @@ export function DashboardView() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button className="bg-white text-teal-700 hover:bg-teal-50" size="sm">
+            <Button className="bg-white text-sky-700 hover:bg-sky-50" size="sm" onClick={() => useAppStore.getState().setModule("appointments")}>
               <CalendarCheck className="mr-2 h-4 w-4" /> Nouveau RDV
             </Button>
-            <Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20" size="sm">
+            <Button variant="outline" className="border-white/30 bg-white/10 text-white hover:bg-white/20" size="sm" onClick={() => useAppStore.getState().setModule("prescriptions")}>
               <FileText className="mr-2 h-4 w-4" /> Ordonnance
             </Button>
           </div>
