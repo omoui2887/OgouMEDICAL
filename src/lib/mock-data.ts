@@ -9,14 +9,14 @@ import type {
 
 export const TENANT = {
   id: "ten_clinique_plateau",
-  name: "Clinique du Plateau",
+  name: "OgouMEDICAL",
   slug: "clinique-plateau",
   type: "clinique",
   city: "Abidjan",
   district: "Cocody - Plateau",
-  phone: "+225 27 22 49 87 30",
-  email: "contact@clinique-plateau.ci",
-  address: "Avenue Chardy, Cocody, Abidjan",
+  phone: "+225 05 76 10 32 77",
+  email: "ogouromain@gmail.com",
+  address: "Côte d'Ivoire",
 };
 
 const AVATAR_COLORS = [

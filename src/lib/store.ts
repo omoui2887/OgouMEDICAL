@@ -78,7 +78,7 @@ export const useAppStore = create<AppState>((set) => ({
         name: ROLE_DEFAULTS[role ?? "admin_cabinet"],
         role: role ?? "admin_cabinet",
         tenantId: "ten_clinique_plateau",
-        tenantName: "Clinique du Plateau",
+        tenantName: "OgouMEDICAL",
       },
     }),
   exitToLanding: () =>

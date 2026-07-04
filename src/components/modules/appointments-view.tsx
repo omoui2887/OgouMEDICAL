@@ -970,7 +970,7 @@ function NewAppointmentDialog({
             <Plus className="h-5 w-5 text-primary" /> Nouveau rendez-vous
           </DialogTitle>
           <DialogDescription>
-            Planifiez une consultation à la Clinique du Plateau (Cocody, Abidjan).
+            Planifiez une consultation à la OgouMEDICAL (Cocody, Abidjan).
           </DialogDescription>
         </DialogHeader>
 
@@ -1689,7 +1689,7 @@ export function AppointmentsView() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Rendez-vous</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            {todayCount} aujourd&apos;hui · {weekCount} cette semaine · {confirmedCount} confirmés — Clinique du Plateau, Cocody
+            {todayCount} aujourd&apos;hui · {weekCount} cette semaine · {confirmedCount} confirmés — OgouMEDICAL, Cocody
           </p>
         </div>
         <Button

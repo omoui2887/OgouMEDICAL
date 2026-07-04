@@ -535,7 +535,7 @@ function HeroDashboardPreview() {
           <div className="flex items-center gap-2">
             <BrandMark size="sm" />
             <div>
-              <p className="text-sm font-semibold">Clinique du Plateau</p>
+              <p className="text-sm font-semibold">OgouMEDICAL</p>
               <p className="text-[11px] text-muted-foreground">
                 Cocody — Abidjan
               </p>

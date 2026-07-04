@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         role: user.role,
         tenantId: user.role === "patient" ? null : "ten_clinique_plateau",
-        tenantName: "Clinique du Plateau",
+        tenantName: "OgouMEDICAL",
       },
     });
 

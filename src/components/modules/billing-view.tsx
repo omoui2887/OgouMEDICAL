@@ -450,7 +450,7 @@ function NewInvoiceDialog({ open, onOpenChange }: { open: boolean; onOpenChange:
             <Plus className="h-5 w-5 text-teal-600" /> Nouvelle facture
           </DialogTitle>
           <DialogDescription>
-            Créer une facture pour un patient de la Clinique du Plateau.
+            Créer une facture pour un patient de la OgouMEDICAL.
           </DialogDescription>
         </DialogHeader>
 

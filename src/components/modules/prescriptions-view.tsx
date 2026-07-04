@@ -25,7 +25,7 @@ import {
 import {
   FileText, Search, Filter, Plus, Printer, MessageCircle, RefreshCw,
   Pill, CheckCircle2, FileStack, CalendarClock, Trash2, Stethoscope,
-  Clock, AlertCircle, Building2, User,
+  Clock, AlertCircle, Building2, User, Download,
 } from "lucide-react";
 
 const STATUS_OPTIONS: { value: "tous" | Prescription["status"]; label: string }[] = [
@@ -104,8 +104,39 @@ function PrescriptionDetailDialog({
   if (!prescription) return null;
   const patient = PATIENTS.find((p) => `${p.firstName} ${p.lastName}` === prescription.patientName);
 
-  const handlePrint = () => toast.success("Impression lancée", { description: `${prescription.number} envoyée vers l'imprimante` });
-  const handleWhatsApp = () => toast.success("Envoi WhatsApp", { description: `Ordonnance ${prescription.number} envoyée à ${prescription.patientName}` });
+  const handlePrint = () => {
+    window.print();
+    toast.success("Impression lancée", { description: `${prescription.number} — utilisez « Enregistrer en PDF »` });
+  };
+  const handleDownloadPdf = async () => {
+    toast.loading("Génération du PDF...", { id: "pdf" });
+    try {
+      const res = await fetch(`/api/prescriptions/${prescription.id}/pdf`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("PDF téléchargé !", { id: "pdf", description: `${prescription.number}.pdf` });
+        window.print();
+      } else {
+        toast.error("Erreur PDF", { id: "pdf", description: data.error });
+      }
+    } catch {
+      toast.error("Erreur PDF", { id: "pdf" });
+    }
+  };
+  const handleWhatsApp = async () => {
+    toast.loading("Envoi WhatsApp...", { id: "wa" });
+    try {
+      const res = await fetch(`/api/prescriptions/${prescription.id}/whatsapp`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Ordonnance envoyée !", { id: "wa", description: `WhatsApp → ${data.sentTo ?? prescription.patientName}` });
+      } else {
+        toast.error("Échec envoi", { id: "wa", description: data.error });
+      }
+    } catch {
+      toast.error("Échec envoi", { id: "wa" });
+    }
+  };
   const handleRenew = () => {
     toast.success("Renouvellement demandé", { description: "Une nouvelle ordonnance a été créée à partir de ce modèle" });
     onOpenChange(false);
@@ -119,7 +150,7 @@ function PrescriptionDetailDialog({
             <FileText className="h-5 w-5 text-teal-600" /> Ordonnance médicale
           </DialogTitle>
           <DialogDescription>
-            Document officiel — Clinique du Plateau
+            Document officiel — OgouMEDICAL
           </DialogDescription>
         </DialogHeader>
 
@@ -246,6 +277,9 @@ function PrescriptionDetailDialog({
             <Button variant="outline" size="sm" onClick={handlePrint}>
               <Printer className="mr-1.5 h-4 w-4" /> Imprimer
             </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadPdf} className="border-sky-200 text-sky-700 hover:bg-sky-50">
+              <Download className="mr-1.5 h-4 w-4" /> PDF
+            </Button>
             <Button variant="outline" size="sm" onClick={handleWhatsApp} className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800">
               <MessageCircle className="mr-1.5 h-4 w-4" /> WhatsApp
             </Button>
@@ -312,7 +346,7 @@ function NewPrescriptionDialog({ open, onOpenChange }: { open: boolean; onOpenCh
             <Plus className="h-5 w-5 text-teal-600" /> Nouvelle ordonnance
           </DialogTitle>
           <DialogDescription>
-            Émettre une ordonnance électronique pour un patient de la Clinique du Plateau.
+            Émettre une ordonnance électronique pour un patient de la OgouMEDICAL.
           </DialogDescription>
         </DialogHeader>
 
@@ -458,7 +492,7 @@ export function PrescriptionsView() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Ordonnances</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            <span className="font-semibold text-emerald-600">{activeCount} actives</span> · {expiredCount} expirées · Clinique du Plateau
+            <span className="font-semibold text-emerald-600">{activeCount} actives</span> · {expiredCount} expirées · OgouMEDICAL
           </p>
         </div>
         <Button onClick={() => setNewOpen(true)} className="bg-teal-600 text-white hover:bg-teal-700">

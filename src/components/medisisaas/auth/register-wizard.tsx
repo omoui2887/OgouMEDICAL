@@ -269,7 +269,7 @@ export function RegisterWizard() {
                 <FormItem>
                   <FormLabel>Nom du cabinet</FormLabel>
                   <FormControl>
-                    <Input placeholder="Clinique du Plateau" {...field} />
+                    <Input placeholder="OgouMEDICAL" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
