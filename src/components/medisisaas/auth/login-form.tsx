@@ -262,42 +262,6 @@ export function LoginForm() {
           Créer un compte cabinet
         </button>
       </p>
-
-      {/* Encart comptes démo */}
-      <div className="mt-6 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-          <Sparkles className="h-4 w-4 text-orange-500" />
-          Comptes de démonstration
-        </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Mot de passe pour tous les comptes :{" "}
-          <code className="rounded bg-background px-1.5 py-0.5 font-mono text-[11px]">
-            demo1234
-          </code>
-        </p>
-        <ul className="mt-3 max-h-32 space-y-1 overflow-y-auto pr-1 text-xs">
-          {DEMO_ACCOUNTS.map((a) => (
-            <li
-              key={a.email}
-              className="flex items-center justify-between gap-2 rounded-md bg-background/60 px-2 py-1.5"
-            >
-              <span className="font-mono text-[11px] text-foreground">
-                {a.email}
-              </span>
-              <span className="shrink-0 text-muted-foreground">{a.role}</span>
-            </li>
-          ))}
-        </ul>
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          className="mt-3 w-full bg-emerald-600 text-white hover:bg-emerald-700"
-          onClick={handleQuickDemo}
-        >
-          Connexion rapide démo
-        </Button>
-      </div>
     </AuthShell>
   );
 }

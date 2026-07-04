@@ -30,21 +30,16 @@ export interface RegisterData {
 }
 
 // Utilisateurs de démonstration (en prod : Supabase Auth)
+// Le SaaS démarre vierge — les utilisateurs sont créés via le formulaire d'inscription
 const DEMO_USERS: Array<{
   email: string;
   password: string;
   role: Role;
   name: string;
   tenantName: string;
-}> = [
-  { email: "admin@clinique-plateau.ci", password: "demo1234", role: "admin_cabinet", name: "Dr. Aya Kouassi", tenantName: "OgouMEDICAL" },
-  { email: "medecin@clinique-plateau.ci", password: "demo1234", role: "medecin", name: "Dr. Konan Yao", tenantName: "OgouMEDICAL" },
-  { email: "secretaire@clinique-plateau.ci", password: "demo1234", role: "secretaire", name: "Affoué Tanoh", tenantName: "OgouMEDICAL" },
-  { email: "comptable@clinique-plateau.ci", password: "demo1234", role: "comptable", name: "Yves Adou", tenantName: "OgouMEDICAL" },
-  { email: "patient@gmail.com", password: "demo1234", role: "patient", name: "Kouadio Brou", tenantName: "OgouMEDICAL" },
-];
+}> = [];
 
-const AUTH_STORAGE_KEY = "medisaas-auth";
+const AUTH_STORAGE_KEY = "ogoumedical-auth";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));

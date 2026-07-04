@@ -1244,25 +1244,55 @@ function Footer() {
           </div>
 
           {/* Colonnes de liens */}
-          {cols.map((col) => (
-            <div key={col.title}>
-              <h4 className="text-sm font-semibold tracking-tight">
-                {col.title}
-              </h4>
-              <ul className="mt-4 space-y-2.5">
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    <a
-                      href={l.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {cols.map((col) => {
+            const actionFor = (label: string): null | (() => void) => {
+              const s = useAppStore.getState();
+              if (label === "À propos") return s.showAbout;
+              if (label === "Statut plateforme") return s.showStatus;
+              if (
+                label === "Mentions légales" ||
+                label === "Conditions générales" ||
+                label === "Politique de confidentialité"
+              )
+                return s.showLegal;
+              return null;
+            };
+            return (
+              <div key={col.title}>
+                <h4 className="text-sm font-semibold tracking-tight">
+                  {col.title}
+                </h4>
+                <ul className="mt-4 space-y-2.5">
+                  {col.links.map((l) => {
+                    const action = actionFor(l.label);
+                    if (action) {
+                      return (
+                        <li key={l.label}>
+                          <button
+                            type="button"
+                            onClick={action}
+                            className="text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
+                          >
+                            {l.label}
+                          </button>
+                        </li>
+                      );
+                    }
+                    return (
+                      <li key={l.label}>
+                        <a
+                          href={l.href}
+                          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                        >
+                          {l.label}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-6 sm:flex-row sm:items-center">

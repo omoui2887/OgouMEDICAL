@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import type { ModuleKey, Role } from "@/lib/types";
 
-export type AppView = "landing" | "dashboard";
+export type AppView = "landing" | "dashboard" | "status" | "about" | "legal";
 export type AuthScreen = "login" | "register" | "forgot" | "verify" | "booking";
 
 export interface AuthUser {
@@ -33,6 +33,9 @@ interface AppState {
   setSelectedPatientId: (id: string | null) => void;
   enterDashboard: (role?: Role) => void;
   exitToLanding: () => void;
+  showStatus: () => void;
+  showAbout: () => void;
+  showLegal: () => void;
   // Auth actions
   showAuth: (screen: AuthScreen) => void;
   hideAuth: () => void;
@@ -41,12 +44,12 @@ interface AppState {
 }
 
 const ROLE_DEFAULTS: Record<Role, string> = {
-  super_admin: "Admin Plateforme",
-  admin_cabinet: "Dr. Aya Kouassi",
-  medecin: "Dr. Konan Yao",
-  secretaire: "Affoué Tanoh",
-  patient: "Kouadio Brou",
-  comptable: "Yves Adou",
+  super_admin: "Super Admin",
+  admin_cabinet: "Administrateur",
+  medecin: "Médecin",
+  secretaire: "Secrétaire",
+  patient: "Patient",
+  comptable: "Comptable",
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -83,6 +86,9 @@ export const useAppStore = create<AppState>((set) => ({
     }),
   exitToLanding: () =>
     set({ view: "landing", authScreen: null, isAuthenticated: false, authUser: null }),
+  showStatus: () => set({ view: "status", authScreen: null }),
+  showAbout: () => set({ view: "about", authScreen: null }),
+  showLegal: () => set({ view: "legal", authScreen: null }),
   showAuth: (screen) => set({ authScreen: screen }),
   hideAuth: () => set({ authScreen: null }),
   authenticate: (user) =>
