@@ -1,0 +1,15 @@
+{
+  "name": "@medisaas/ui-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Composants UI réutilisables MediSaaS CI (basés sur shadcn/ui)",
+  "main": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  }
+}

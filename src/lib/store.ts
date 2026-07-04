@@ -3,6 +3,16 @@ import { create } from "zustand";
 import type { ModuleKey, Role } from "@/lib/types";
 
 export type AppView = "landing" | "dashboard";
+export type AuthScreen = "login" | "register" | "forgot" | "verify" | "booking";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  tenantId: string | null;
+  tenantName: string | null;
+}
 
 interface AppState {
   view: AppView;
@@ -11,6 +21,10 @@ interface AppState {
   sidebarCollapsed: boolean;
   userName: string;
   selectedPatientId: string | null;
+  // Auth
+  authScreen: AuthScreen | null;
+  authUser: AuthUser | null;
+  isAuthenticated: boolean;
   // actions
   setView: (v: AppView) => void;
   setModule: (m: ModuleKey) => void;
@@ -19,6 +33,11 @@ interface AppState {
   setSelectedPatientId: (id: string | null) => void;
   enterDashboard: (role?: Role) => void;
   exitToLanding: () => void;
+  // Auth actions
+  showAuth: (screen: AuthScreen) => void;
+  hideAuth: () => void;
+  authenticate: (user: AuthUser) => void;
+  signOut: () => void;
 }
 
 const ROLE_DEFAULTS: Record<Role, string> = {
@@ -37,6 +56,9 @@ export const useAppStore = create<AppState>((set) => ({
   sidebarCollapsed: false,
   userName: ROLE_DEFAULTS["admin_cabinet"],
   selectedPatientId: null,
+  authScreen: null,
+  authUser: null,
+  isAuthenticated: false,
   setView: (v) => set({ view: v }),
   setModule: (m) => set({ module: m, selectedPatientId: null }),
   setRole: (r) => set({ role: r, userName: ROLE_DEFAULTS[r] }),
@@ -48,6 +70,37 @@ export const useAppStore = create<AppState>((set) => ({
       module: "dashboard",
       role: role ?? "admin_cabinet",
       userName: ROLE_DEFAULTS[role ?? "admin_cabinet"],
+      authScreen: null,
+      isAuthenticated: true,
+      authUser: {
+        id: "user_demo",
+        email: "admin@clinique-plateau.ci",
+        name: ROLE_DEFAULTS[role ?? "admin_cabinet"],
+        role: role ?? "admin_cabinet",
+        tenantId: "ten_clinique_plateau",
+        tenantName: "Clinique du Plateau",
+      },
     }),
-  exitToLanding: () => set({ view: "landing" }),
+  exitToLanding: () =>
+    set({ view: "landing", authScreen: null, isAuthenticated: false, authUser: null }),
+  showAuth: (screen) => set({ authScreen: screen }),
+  hideAuth: () => set({ authScreen: null }),
+  authenticate: (user) =>
+    set({
+      authUser: user,
+      isAuthenticated: true,
+      authScreen: null,
+      view: "dashboard",
+      module: "dashboard",
+      role: user.role,
+      userName: user.name,
+    }),
+  signOut: () =>
+    set({
+      authUser: null,
+      isAuthenticated: false,
+      authScreen: null,
+      view: "landing",
+      module: "dashboard",
+    }),
 }));

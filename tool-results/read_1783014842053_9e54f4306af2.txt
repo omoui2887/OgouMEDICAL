@@ -1,0 +1,385 @@
+     1→     1→# MediSaaS CI — Worklog partagé
+     2→     2→
+     3→     3→Projet : MediSaaS CI — Plateforme SaaS de gestion médicale pour la Côte d'Ivoire
+     4→     4→Stack : Next.js 16 (App Router) + TypeScript + Tailwind 4 + shadcn/ui + Prisma (SQLite) + Recharts + Zustand
+     5→     5→
+     6→     6→---
+     7→     7→Task ID: 1
+     8→     8→Agent: Z.ai (orchestrateur)
+     9→     9→Task: Fondation — schéma Prisma multi-tenant, types TS, données mock (contexte ivoirien), thème médical, layout, store Zustand, API routes, shell dashboard, Module 8 (Tableau de bord & Analytique)
+    10→    10→
+    11→    11→Work Log:
+    12→    12→- Schéma Prisma multi-tenant créé : Tenant, User (rôles), Patient (DPN), Appointment, Consultation, Prescription, Invoice, Payment, Subscription, AuditLog. Push DB effectué.
+    13→    13→- Types TS partagés (`src/lib/types.ts`) : rôles, modules, statuts, helpers `formatFCFA`/`formatDate`.
+    14→    14→- Données mock riches (`src/lib/mock-data.ts`) : clinique du Plateau (Cocody, Abidjan), 5 médecins (Dr. Aya Kouassi, Dr. Konan Yao...), 48 patients (noms ivoiriens, communes d'Abidjan), 40 RDV, 24 ordonnances, 30 factures, paiements Mobile Money, consultation, abonnement, 3 plans SaaS, données analytiques 12 mois.
+    15→    15→- Thème médical dans `globals.css` : primaire sarcelle/émeraude (santé), accent orange (drapeau CI + Orange Money), dark mode, scrollbar custom, grille médicale, animations.
+    16→    16→- Layout (`src/app/layout.tsx`) : métadonnées FR, lang="fr", Toaster + Sonner.
+    17→    17→- Store Zustand (`src/lib/store.ts`) : `view` (landing/dashboard), `module` actif, `role`, sidebar, `enterDashboard`/`exitToLanding`.
+    18→    18→- Config navigation (`src/lib/nav.ts`) : 10 modules, rôles et leurs accès modules.
+    19→    19→- Composants partagés : `brand.tsx` (logo croix médicale), `shared.tsx` (badges statut RDV/facture/paiement, avatars, rôles).
+    20→    20→- Shell dashboard (`dashboard-shell.tsx`) : sidebar repliable (groupes Pilotage/Métier/Finance/Espace patient), topbar (sélecteur de rôle, thème, notifications, profil), bandeau conformité Loi 2013-450.
+    21→    21→- Module 8 Tableau de bord (`dashboard-view.tsx`) : bandeau bienvenue, 4 KPIs, area chart revenus 12 mois, pie chart moyens de paiement (Orange/Wave/MTN), bar chart RDV 7j, liste RDV récents, charge médecins, ordonnances récentes.
+    22→    22→- Routeur de modules (`module-router.tsx`).
+    23→    23→- API routes : `/api/dashboard`, `/api/patients`, `/api/appointments`, `/api/prescriptions`, `/api/invoices`, `/api/doctors`, `/api/subscription`.
+    24→    24→- Page principale (`src/app/page.tsx`) : bascule landing ↔ dashboard via store.
+    25→    25→- Stubs créés pour les modules à construire par les subagents.
+    26→    26→- Lint OK, serveur dev démarré sur port 3000.
+    27→    27→
+    28→    28→Stage Summary:
+    29→    29→- Fondation complète et fonctionnelle. Le dashboard s'affiche avec le Module 8 (Analytique) opérationnel.
+    30→    30→- Contrat pour les subagents : chaque module = un composant client dans `src/components/modules/<name>-view.tsx`, exportant `export function <Name>View()`. Aucun prop requis : importer les données depuis `@/lib/mock-data` et les helpers depuis `@/lib/types`. Utiliser shadcn/ui (déjà installé), Recharts pour graphiques, texte 100% français, FCFA, contexte ivoirien.
+    31→    31→- Fichiers disponibles pour les subagents :
+    32→    32→  - `src/lib/types.ts` (types + formatFCFA/formatDate + ROLE_LABELS, PAYMENT_LABELS, PAYMENT_COLORS)
+    33→    33→  - `src/lib/mock-data.ts` (TENANT, DOCTORS, PATIENTS, APPOINTMENTS, PRESCRIPTIONS, INVOICES, PAYMENTS, CONSULTATIONS, SUBSCRIPTION, PLANS, MONTHLY_REVENUE, PAYMENT_DISTRIBUTION, SPECIALTY_DISTRIBUTION, APPOINTMENTS_TREND)
+    34→    34→  - `src/components/medisisaas/shared.tsx` (AppointmentStatusBadge, InvoiceStatusBadge, PaymentBadge, Avatar, RoleBadge)
+    35→    35→  - `src/components/medisisaas/brand.tsx` (Brand, BrandMark)
+    36→    36→  - `src/lib/store.ts` (useAppStore — role, module, enterDashboard...)
+    37→    37→  - shadcn/ui complet dans `src/components/ui/`
+    38→    38→- Palette : primaire sarcelle `teal-600`, accent `orange-500`, succès `emerald-600`, danger `rose-500`. PAS d'indigo/bleu.
+    39→    39→
+    40→    40→---
+    41→    41→Task ID: 2-a
+    42→    42→Agent: full-stack-developer (landing page)
+    43→    43→Task: Landing page marketing 100% française MediSaaS CI
+    44→    44→
+    45→    45→Work Log:
+    46→    46→- Lecture du worklog Task 1 (fondation, store, mock-data, brand, palette) et des fichiers partagés (store.ts, mock-data.ts, types.ts, brand.tsx, globals.css, button/badge/sheet shadcn).
+    47→    47→- Écriture complète de `src/components/medisisaas/landing-page.tsx` (env. 900 lignes) qui remplace le stub. Composant `"use client"` qui consomme `useAppStore((s) => s.enterDashboard)` et appelle `enterDashboard("admin_cabinet")` sur tous les CTA principaux.
+    48→    48→- 11 sections livrées dans l'ordre demandé :
+    49→    49→  1. Header sticky (Brand + nav 6 liens + boutons "Connexion" / "Démarrer l'essai"), menu hamburger Sheet sur mobile.
+    50→    50→  2. Hero : titre gradient sarcelle, sous-titre FR (RDV, DPE, ordonnances, Mobile Money, téléconsultation), 2 CTA, carte glassmorphism avec mini aperçu dashboard (KPIs 512 RDV / 4,8M FCFA / 1 240 patients, mini bar chart, lignes RDV + paiement Orange Money), badges confiance (Loi 2013-450, af-south-1, Mobile Money), fond `medical-grid` + halos `glow-teal`, notifications flottantes animées.
+    51→    51→  3. Bandeau partenaires (CinetPay, Orange Money, Wave, MTN Money, Africa's Talking, WhatsApp Business, Daily.co) avec pastilles colorées (Wave=sky, MTN=yellow, Orange=orange).
+    52→    52→  4. Section Modules : 10 cartes (Tableau de bord, RDV, Dossier Patient, Ordonnances, Facturation Mobile Money, Téléconsultation, Portail patient, Abonnements SaaS, Analytique, Onboarding) avec icônes lucide, gradients teal/orange, hover bordure teal + translate-y.
+    53→    53→  5. Section "Pourquoi MediSaaS CI" : 6 cartes (Multi-tenant isolé, Loi 2013-450 + ARTCI, AES-256, Mobile Money, Téléconsultation Daily.co, SMS/WhatsApp).
+    54→    54→  6. Section "Comment ça marche" : 4 étapes numérotées (Onboarding → Import patients → Consultations → Paiements).
+    55→    55→  7. Section Témoignages : 3 figures (Dr. Aya Kouassi / Clinique Cocody, Dr. Konan Yao / Cardiologue Plateau, Mme Affoué Tanoh / Yopougon) avec étoiles orange, citations, avatars initiales colorées.
+    56→    56→  8. Section Tarifs (#tarifs) : 3 cartes PLANS importés depuis `@/lib/mock-data`, plan "pro" mis en avant (bordure teal, badge "Le plus populaire", scale-up), bouton bascule mensuel/annuel avec state local (annual = -20% visuel), prix formatFCFA + "/mois".
+    57→    57→  9. Section conformité/sécurité : 4 cartes (af-south-1, Loi 2013-450, AES-256, Backups quotidiens) avec icônes ShieldCheck/Lock/Server/Database.
+    58→    58→  10. CTA final : bloc gradient teal→emerald→emerald-700, "Prêt à digitaliser votre cabinet ?", 2 boutons, halos décoratifs.
+    59→    59→  11. Footer sticky (`mt-auto`) : 4 colonnes (Produit, Ressources, Entreprise, Légal) + Brand + coordonnées TENANT (téléphone, email, adresse) + copyright "© {year} MediSaaS CI — Conforme à la Loi ivoirienne n°2013-450" + badges hébergement.
+    60→    60→- Animations Framer Motion : `fadeUp` + `stagger` sur sections, `whileInView` avec `viewport once`, transitions douces (0.5–0.7s, ease [0.22,1,0.36,1]).
+    61→    61→- Layout `min-h-screen flex flex-col` + `mt-auto` sur le footer (sticky bottom respecté).
+    62→    62→- Palette 100% teal-600 / emerald-600 / orange-500 / emerald / rose ; aucun indigo/bleu (sauf pastilles Wave=sky et MTN=yellow autorisées).
+    63→    63→- Aucun `useMemo`/`useCallback` superflu (2 useState seulement : `mobileOpen`, `annual`).
+    64→    64→- `bun run lint` : aucune erreur.
+    65→    65→- Serveur dev : compile propre, GET / 200.
+    66→    66→
+    67→    67→Stage Summary:
+    68→    68→- Fichier produit : `src/components/medisisaas/landing-page.tsx` (composant unique `LandingPage`, ~900 lignes, 100% français, mobile-first responsive, Framer Motion, shadcn/ui).
+    69→    69→- Toutes les sections demandées sont présentes et branchées sur le store Zustand via `enterDashboard("admin_cabinet")`.
+    70→    70→- Lint propre, prêt pour la suite (subagents modules 1-7).
+    71→    71→
+    72→    72→---
+    73→    73→Task ID: 2-b
+    74→    74→Agent: full-stack-developer (RDV + Patients)
+    75→    75→Task: Modules Rendez-vous (3) et Dossiers Patients (4)
+    76→    76→
+    77→    77→Work Log:
+    78→    78→- Lecture de la fondation (worklog, types, mock-data, shared.tsx, dashboard-view pour respecter le style).
+    79→    79→- Module 3 `appointments-view.tsx` : en-tête + 4 KPIs (Aujourd'hui, Cette semaine, Confirmés, En attente) + Tabs (Aujourd'hui / Cette semaine / Tous) + filtres (recherche, Select médecin, Select statut). Liste chronologique groupée par jour avec en-têtes sticky. Card horizontale par RDV (heure en gros dans un bloc teal, avatar patient, motif + commune, médecin + spécialité, badge type présentiel/téléconsultation avec icônes MapPin/Video, badge statut `AppointmentStatusBadge`, actions confirmer/annuler avec `toast` sonner). Dialog "Nouveau RDV" : formulaire complet (patient via Select depuis PATIENTS, médecin via Select depuis DOCTORS, date/heure, motif, type radio présentiel/téléconsultation) → toast success + fermeture.
+    80→    80→- Module 4 `patients-view.tsx` : en-tête + compteur + bandeau conformité Loi 2013-450 + barre de filtres (recherche nom/code/téléphone, Select commune, Select statut actif/inactif, Select groupe sanguin). Tableau desktop (colonnes Patient avatar+nom+code, Contact téléphone, Commune, Dernière visite, Assurance, Groupe sanguin, Statut) + cards mobile. Clic sur ligne → Sheet droit détaillé "Dossier Patient Numérique" : en-tête (avatar lg + nom + code + badges groupe sanguin/assurance/statut), démographie (naissance avec âge calculé, genre, téléphone, email, adresse, commune), données médicales (poids, taille, IMC calculé avec catégorie colorée, allergies en badges rouges, antécédents chroniques en badges ambrés), assurance (provider + numéro), historique (RDV filtrés par patientId, ordonnances depuis PRESCRIPTIONS, factures depuis INVOICES — listes avec max-h-60 scroll). Dialog "Nouveau patient" : formulaire (prénom, nom, genre radio, naissance, téléphone, commune Select, groupe sanguin Select) → toast.
+    81→    81→- Détails : `type Gender` déclaré localement (non exporté dans types.ts) pour éviter de modifier la fondation. Aucun useMemo/useCallback (React Compiler). Toasts via sonner. Listes longues en `max-h-[60vh] overflow-y-auto`. Palette respectée (teal/emerald/orange, pas d'indigo/bleu). Responsive mobile-first.
+    82→    82→- `bun run lint` → EXIT 0 (aucune erreur ni warning).
+    83→    83→
+    84→    84→Stage Summary:
+    85→    85→- Deux fichiers produits, remplaçant les stubs : `src/components/modules/appointments-view.tsx` (`AppointmentsView`) et `src/components/modules/patients-view.tsx` (`PatientsView`).
+    86→    86→- Module 3 : agenda RDV complet avec KPIs, onglets, filtres, planning chronologique et création de RDV.
+    87→    87→- Module 4 : gestion du DPN avec table filtrable + Sheet détaillé riche (démographie, médical, assurance, historique cross-modules) et création de patient.
+    88→    88→- Interface 100% française, montants en FCFA, contexte ivoirien (communes d'Abidjan, CNPS/mutuelles, Mobile Money). Prêt pour intégration dans le routeur de modules.
+    89→    89→
+    90→    90→---
+    91→    91→Task ID: 2-d
+    92→    92→Agent: full-stack-developer (Portail patient + Abonnements)
+    93→    93→Task: Modules Portail Patient (9) et Abonnements SaaS (10)
+    94→    94→
+    95→    95→Work Log:
+    96→    96→- Lu worklog + mock-data + types + shared/brand pour respecter la fondation et les conventions (palette teal/emerald/orange, FCFA, contexte ivoirien, composants partagés).
+    97→    97→- Module 9 — `src/components/modules/patient-portal-view.tsx` (PatientPortalView, ~900 lignes) :
+    98→    98→  • En-tête chaleureux : gradient teal→emerald, "Bonjour, [Prénom] 👋", carte patient (avatar, code CI-CP-0001, sexe/âge/commune, badges groupe sanguin A+ rose et assurance CNPS).
+    99→    99→  • Carte "Mon dossier médical" : 4 sous-cartes (groupe sanguin, allergies en badges amber, antécédents en badges orange, mesures poids/taille/IMC avec catégorie colorée) + encart "Prochain rendez-vous".
+   100→   100→  • Encart téléconsultation conditionnel (gradient orange) si RDV téléconsult à venir, bouton "Rejoindre la téléconsultation" → toast Daily.co.
+   101→   101→  • 4 onglets : Mes RDV (liste filtrée patientId=pat_1, badges statut, bouton Annuler si planifié/confirmé), Mes ordonnances (liste, bouton Voir détail → Dialog détaillé avec médicaments, bouton Renouveler → toast), Mes factures (liste avec InvoiceStatusBadge, montant, bouton Payer si impayée → Dialog Mobile Money Orange/Wave/MTN/CB + numéro + paiement), Prendre RDV (formulaire Select spécialité→médecin + date/heure/motif + aperçu médecin noté + infos pratiques + bouton Confirmer → toast).
+   102→   102→  • États vides stylés (EmptyState), utilisation des badges partagés (AppointmentStatusBadge, InvoiceStatusBadge, PaymentBadge, Avatar).
+   103→   103→- Module 10 — `src/components/modules/subscriptions-view.tsx` (SubscriptionsView, ~560 lignes) :
+   104→   104→  • En-tête "Abonnement & Facturation SaaS" + badge statut actif (point vert pulsant).
+   105→   105→  • Carte plan actuel (gradient teal/emerald, Crown orange, montant 75 000 FCFA/mois, période start→end, méthode Orange Money, boutons "Améliorer mon plan" et "Modifier le paiement").
+   106→   106→  • Carte "Utilisation du plan" : 4 barres Progress colorées (Utilisateurs 7/10 teal, Patients 48/illimité emerald, Téléconsultations 12/50 orange, SMS 320/1000 cyan) + rappel renouvellement.
+   107→   107→  • Section "Changer de plan" : 3 cartes PLANS avec icône, prix, features cochées, badge "Plan actuel" sur Pro, boutons "Mettre à niveau" (teal) / "Rétrograder" (orange) → Dialog confirmation avec choix Mobile Money + toast.
+   108→   108→  • Carte "Méthode de paiement" (Orange Money affiché) + bouton Modifier → Dialog.
+   109→   109→  • Table historique facturation : 6 mois mockés à 75 000 FCFA, badge "Payée", bouton PDF → toast, total 450 000 FCFA.
+   110→   110→  • Zone résiliation (bordure rose) avec bouton → Dialog de confirmation (pertes détaillées, raison, mention Loi 2013-450).
+   111→   111→- Lint standard OK. Lint strict (no-unused-vars) : nettoyage de 3 imports/vars inutilisés (BrandMark, ChevronRight, aptId, age intégré dans la carte patient).
+   112→   112→- Vérification dev.log : serveur tourne sur port 3000, pas d'erreur de compilation.
+   113→   113→
+   114→   114→Stage Summary:
+   115→   115→- 2 modules livrés et fonctionnels, branchés dans `module-router.tsx` (cases "patient-portal" et "subscriptions").
+   116→   116→- Fichiers produits :
+   117→   117→  - `src/components/modules/patient-portal-view.tsx` → `export function PatientPortalView()`
+   118→   118→  - `src/components/modules/subscriptions-view.tsx` → `export function SubscriptionsView()`
+   119→   119→- 100% français, FCFA, palette teal/emerald/orange (zéro indigo/bleu), 100% shadcn/ui, toasts Sonner, contexte ivoirien (Cinpay, Orange/Wave/MTN Money, Loi 2013-450, communes d'Abidjan).
+   120→   120→- Pas de props requis : données depuis `@/lib/mock-data`, helpers depuis `@/lib/types`, badges depuis `@/components/medisisaas/shared`.
+   121→   121→- Patient connecté = PATIENTS[0] (Aya Kouassi, code CI-CP-0001, CNPS, Cocody, groupe A+).
+   122→   122→- Tous les Dialogs (détail ordonnance, paiement facture, changement plan, méthode paiement, résiliation) utilisent shadcn Dialog avec actions toast.
+   123→   123→
+   124→   124→---
+   125→   125→Task ID: 2-c
+   126→   126→Agent: full-stack-developer (Ordonnances + Facturation)
+   127→   127→Task: Modules Ordonnances (5) et Facturation Mobile Money (6)
+   128→   128→
+   129→   129→Work Log:
+   130→   130→- Lecture du worklog (Task 1 + 2-a/b/d), types.ts, mock-data.ts, shared.tsx, dashboard-view (pour style charts), appointments-view (style KPI/filtres) et patient-portal-view (style dialog Mobile Money). Stubs existants confirmés à remplacer.
+   131→   131→- Module 5 — `src/components/modules/prescriptions-view.tsx` (~430 lignes, `PrescriptionsView`) :
+   132→   132→  • En-tête "Ordonnances" + compteur actives/expirées + bouton "Nouvelle ordonnance" (teal-600).
+   133→   133→  • 4 KPIs : Ordonnances actives (emerald), Expirées (zinc), Total émises (teal), Validité moyenne (orange, "X j").
+   134→   134→  • Filtres : recherche (numéro/patient), Select statut (tous/active/expiree/annulee), Select médecin (depuis DOCTORS).
+   135→   135→  • Tableau responsive (scroll `max-h-[60vh]`) : numéro mono teal, patient (Avatar), médecin (md+), date (sm+), nb médicaments (badge), statut (PrescriptionStatusBadge local : active=emerald, expiree=zinc, annulee=rose). Header sticky.
+   136→   136→  • Ligne cliquable → Dialog détaillé `sm:max-w-3xl` pro : en-tête clinique (gradient teal/emerald, TENANT name + address + phone + email, numéro + date), carte Patient (avatar + code + commune), carte Médecin (specialty + license), tableau médicaments (nom | posologie | fréquence | durée | instructions), notes (encart amber) + validité (encart emerald/zinc avec date d'expiration calculée). Footer : Imprimer, Envoyer WhatsApp (emerald), Renouveler (teal) → toasts sonner.
+   137→   137→  • Dialog "Nouvelle ordonnance" `sm:max-w-2xl` : Select patient (PATIENTS, scroll), Select médecin (DOCTORS), liste dynamique de médicaments (inputs nom/dosage/fréquence/durée + remove button par ligne), bouton "Ajouter un médicament" (border teal), notes Textarea, encart rappel validité 30 jours. Bouton "Émettre" → toast success.
+   138→   138→- Module 6 — `src/components/modules/billing-view.tsx` (~620 lignes, `BillingView`) :
+   139→   139→  • En-tête "Facturation & Paiements" + total encaissé + bouton "Nouvelle facture" (teal-600).
+   140→   140→  • 4 KPIs : Revenus encaissés (emerald + Progress taux), Factures impayées montant (rose), Partielles montant (amber), Taux de recouvrement % (teal).
+   141→   141→  • Tabs (Toutes | Impayées | Payées | Partielles) + recherche (numéro/patient) + Select méthode paiement (Orange/Wave/MTN/CB/Espèces).
+   142→   142→  • Tableau responsive scroll `max-h-[60vh]` : N° facture mono teal, patient (Avatar), date (sm+), total (bold), payé (md+, emerald), statut (InvoiceStatusBadge partagé), méthode (PaymentBadge si payée, lg+). Header sticky.
+   143→   143→  • Ligne cliquable → Dialog détaillé `sm:max-w-3xl` : en-tête clinique (TENANT) + statut, carte patient (avatar + code + commune), tableau prestations (description | qté | prix unitaire | total ligne), récap (sous-total, TVA 18% CI, total teal), section règlement (payé emerald, reste rose si >0, PaymentBadge). Bouton Imprimer (outline) + bouton "Encaisser {reste}" (orange) visible si impayée/partielle.
+   144→   144→  • Sous-Dialog Mobile Money `sm:max-w-md` (PaymentDialog) : carte récap gradient teal/emerald (reste à payer, total, déjà payé), Input montant pré-rempli avec le reste (modifiable), grille 2x2 de 4 cartes méthode (Orange Money=orange, Wave=sky, MTN Money=yellow text-yellow-950, Carte bancaire=violet), Input numéro Mobile Money (ou email si CB), encart CinetPay. Bouton "Payer {montant} FCFA" (orange) → toast "Paiement initié via [méthode]". Ouvert au-dessus du Dialog détail (z-index géré par Radix).
+   145→   145→  • Dialog "Nouvelle facture" `sm:max-w-2xl` : Select patient, Select méthode paiement, items dynamiques (description + qté + prix unitaire, remove button), récap auto (sous-total, TVA 18%, total), bouton "Créer la facture" → toast.
+   146→   146→  • Section graphique bas : BarChart 12 mois (gradient teal→emerald, tooltip FCFA, axe Y en millions) dans Card lg:col-span-2 + PieChart répartition paiements (PAYMENT_DISTRIBUTION, color de chaque entrée, légende + liste détaillée %) dans Card lg:col-span-1.
+   147→   147→- Détails techniques : aucun useMemo/useCallback (calculs directs pour React Compiler). Toasts via sonner. Avatar/InvoiceStatusBadge/PaymentBadge depuis shared.tsx. Palette teal/emerald/orange respectée (zéro indigo/bleu, sauf badges Mobile Money Wave=sky, MTN=yellow, CB=violet autorisés). 100% FR, FCFA, contexte ivoirien (CinetPay, TVA 18%, communes Abidjan).
+   148→   148→- `bun run lint` → EXIT 0 (aucune erreur ni warning). dev.log propre, GET / 200.
+   149→   149→
+   150→   150→Stage Summary:
+   151→   151→- 2 fichiers produits, remplaçant les stubs :
+   152→   152→  - `src/components/modules/prescriptions-view.tsx` → `export function PrescriptionsView()`
+   153→   153→  - `src/components/modules/billing-view.tsx` → `export function BillingView()`
+   154→   154→- Module 5 : ordonnances électroniques complètes (KPIs, filtres, tableau, détail pro format clinique, création avec meds dynamiques, actions Imprimer/WhatsApp/Renouveler).
+   155→   155→- Module 6 : facturation Mobile Money (KPIs, onglets, tableau, détail facture avec TVA 18%, encaissement Orange/Wave/MTN/CB via sous-Dialog CinetPay, nouvelle facture, graphiques revenus + répartition paiements).
+   156→   156→- Branchés dans `module-router.tsx` (cases "prescriptions" et "billing" déjà câblées).
+   157→   157→- Prêt pour intégration finale.
+   158→   158→
+   159→   159→---
+   160→   160→Task ID: 8b + 9
+   161→   161→Agent: Z.ai (orchestrateur)
+   162→   162→Task: Modules Téléconsultation (7) + Analytique + Paramètres, puis intégration finale et vérification Agent Browser
+   163→   163→
+   164→   164→Work Log:
+   165→   165→- Module 7 Téléconsultation (teleconsultation-view.tsx) : salle vidéo simulée Daily.co (vignette médecin PiP, barre contrôle micro/caméra/partage/messages, badge chiffré E2E, timer), notes de consultation en direct, liste RDV téléconsultation à venir/passés, encart sécurité & conformité Loi 2013-450.
+   166→   166→- Module Analytique (analytics-view.tsx) : 4 KPIs synthèse (revenus 12 mois, consultations, patients, taux recouvrement), 4 onglets (Revenus/Patients/Médical/Équipe) avec AreaChart combiné, PieChart paiements, BarChart diagnostics & tranches d'âge & communes Abidjan, RadarChart spécialités, LineChart tendances, performance équipe médicale.
+   167→   167→- Module Paramètres (settings-view.tsx) : 4 onglets (Cabinet/Utilisateurs/Sécurité/Notifications), infos cabinet (TENANT), horaires, équipe + rôles, conformité AES-256/af-south-1/audit logs/2FA, sauvegardes, canaux notif (Africa's Talking SMS/WhatsApp/Resend/PWA), modèles de rappel.
+   168→   168→- Vérification Agent Browser end-to-end réussie :
+   169→   169→  * Landing page : 11 sections rendues (hero, modules, features, étapes, témoignages, tarifs, conformité, CTA, footer sticky avec © 2024 + Loi 2013-450 + adresse Cocody Abidjan)
+   170→   170→  * Dashboard : sidebar 10 modules, topbar (sélecteur rôle, thème, notifs, profil), bandeau bienvenue Clinique du Plateau, KPIs, graphiques
+   171→   171→  * Module RDV : planning chronologique, filtres, dialog nouveau RDV
+   172→   172→  * Module Patients : 48 patients enregistrés/42 actifs, DPN détaillé
+   173→   173→  * Module Facturation : 1 198 290 FCFA encaissés, factures impayées 292 640 FCFA, dialog détail facture, dialog paiement Mobile Money (Orange/Wave/MTN/CB + CinetPay + numéro + bouton Payer)
+   174→   174→  * Module Téléconsultation : salle vidéo, RDV à venir
+   175→   175→  * Responsivité mobile (390px) : menu hamburger landing + dashboard, footer sticky
+   176→   176→- Lint exit 0 sur tout le projet.
+   177→   177→
+   178→   178→Stage Summary:
+   179→   179→- MediSaaS CI est COMPLET et vérifié navigateur. 10 modules fonctionnels, interface 100% française, FCFA, Mobile Money (Orange/Wave/MTN/CB via CinetPay), conformité Loi 2013-450, multi-tenant (schéma Prisma), rôles (6), téléconsultation, analytique, portail patient, abonnements SaaS (3 plans).
+   180→   180→- Architecture : Next.js 16 App Router + Prisma (SQLite, schéma multi-tenant) + Recharts + Zustand + shadcn/ui + Framer Motion + sonner.
+   181→   181→- Le golden path complet est vérifié : landing → dashboard → navigation modules → facturation → paiement Mobile Money.
+   182→   182→
+   183→   183→---
+   184→   184→Task ID: 3
+   185→   185→Agent: Z.ai (orchestrateur)
+   186→   186→Task: Structure monorepo Turborepo — configs racine, palette médicale, middleware RBAC
+   187→   187→
+   188→   188→Work Log:
+   189→   189→- .env.example complet (Supabase, CinetPay, Africa's Talking, WhatsApp, Daily.co, Resend, Stripe, Sentry, PostHog, AWS af-south-1, chiffrement AES-256, audit, conformité Loi 2013-450).
+   190→   190→- turbo.json (tasks build/dev/lint/test/db:*, globalEnv).
+   191→   191→- docker-compose.yml (web, api, PostgreSQL 16, Redis 7, Mailhog).
+   192→   192→- package.json racine : workspaces apps/* + packages/*, scripts dev/build/lint/format/typecheck/db:*/docker, lint-staged, devDeps (husky, lint-staged, prettier, eslint-config-prettier, turbo).
+   193→   193→- .prettierrc + .prettierignore (prettier-plugin-tailwindcss).
+   194→   194→- .husky/pre-commit (lint-staged) + .husky/pre-push (lint + typecheck).
+   195→   195→- tailwind.config.ts : palette médicale exacte (#0EA5E9 primary, #10B981 secondary, #F59E0B accent, #EF4444 danger) + couleurs Mobile Money ivoiriennes (orange/wave/mtn).
+   196→   196→- globals.css : variables OKLCH dérivées des hex demandés, dark mode, grille médicale bleue, halo glow-medical.
+   197→   197→- src/middleware.ts : RBAC complet (ROUTE_ROLE_MATRIX par préfixe, routes publiques, redirect /login si non auth, /forbidden si rôles insuffisants, headers de sécurité + noindex conformité Loi 2013-450).
+   198→   198→- Structure monorepo créée : apps/{web,api}, packages/{database,shared-types,ui-kit}, supabase/{migrations,functions}, docs/.
+   199→   199→- package.json par package (@medisaas/shared-types, @medisaas/database, @medisaas/ui-kit, @medisaas/web, @medisaas/api).
+   200→   200→
+   201→   201→Stage Summary:
+   202→   202→- L'app Next.js continue de tourner (src/ = apps/web conceptuellement). La palette passe du teal à la palette médicale bleu/vert/orange/rouge demandée.
+   203→   203→- Prochains subagents : (3-a) packages shared-types/database/ui-kit, (3-b) apps/api NestJS structure, (3-c) supabase + docs.
+   204→   204→
+   205→   205→---
+   206→   206→Task ID: 3-a
+   207→   207→Agent: full-stack-developer (packages)
+   208→   208→Task: packages/shared-types + packages/database + packages/ui-kit
+   209→   209→
+   210→   210→Work Log:
+   211→   211→- Lecture du worklog (Task 1 fondation + Task 3 monorepo), de `src/lib/types.ts`, `src/lib/utils.ts`, `src/lib/mock-data.ts`, `prisma/schema.prisma`, des package.json des 3 packages et de la config ESLint racine.
+   212→   212→- Création du package **@medisaas/shared-types** (`packages/shared-types/src/`) — 10 fichiers TypeScript stricts, JSDoc 100% français, sans modifier `src/lib/types.ts` :
+   213→   213→  • `roles.ts` : `enum Role` (6 rôles SUPER_ADMIN→PATIENT), `ROLE_LABELS`, `Permission` (20 permissions fines), `ROLE_PERMISSIONS` (matrice complète), `hasPermission`/`hasAnyPermission`, `ALL_ROLES`.
+   214→   214→  • `patient.ts` : `Patient`, `PatientInput`, `MedicalRecord`, `Gender`, `BloodType`, `PatientStatus`.
+   215→   215→  • `appointment.ts` : `Appointment`, `AppointmentInput`, `AppointmentStatus`, `AppointmentType` + labels FR.
+   216→   216→  • `prescription.ts` : `Prescription`, `PrescriptionInput`, `Medication`, `PrescriptionStatus` + labels.
+   217→   217→  • `billing.ts` : `Invoice`, `InvoiceInput`, `InvoiceItem`, `Payment`, `PaymentInput`, `PaymentMethod`, `PaymentStatus`, `InvoiceStatus` + labels + `PAYMENT_METHOD_COLORS` + `PAYMENT_METHOD_HEX` (couleurs marques Orange/Wave/MTN).
+   218→   218→  • `subscription.ts` : `Subscription`, `PlanDescriptor`, `Plan`, `BillingCycle`, `SubscriptionStatus`, `PLANS` (catalogue 3 plans Essentiel/Pro/Entreprise avec features + limites).
+   219→   219→  • `api.ts` : `ApiResponse<T>`, `ApiErrorResponse`, `ApiResult<T>`, `PaginatedResponse<T>`, `ApiError`, `API_ERROR_CODES`, `buildApiError`.
+   220→   220→  • `tenant.ts` : `Tenant`, `TenantSettings`, `TenantType`, `TenantStatus`, `OpeningHours`, `DaySchedule` + labels.
+   221→   221→  • `utils.ts` : `formatFCFA`, `formatFCFAShort`, `formatDate`, `formatDateTime`, `calcAge`, `calcBMI`, `initials`, `truncate`, `isIvorianPhone`.
+   222→   222→  • `index.ts` : barrel export de tout ce qui précède.
+   223→   223→- Création du package **@medisaas/database** :
+   224→   224→  • `schema.prisma` : copie fidèle du schéma racine (Tenant, User, Patient, Appointment, Consultation, Prescription, Invoice, Payment, Subscription, AuditLog) + bloc de commentaire détaillant le passage PostgreSQL/Supabase en prod (provider, RLS, Json natifs, enums). Ajout de `@@index` et `onDelete: Cascade`/`SetNull` cohérents. Garde SQLite pour le dev local.
+   225→   225→  • `seed/index.ts` : script TypeScript idempotent via `upsert`/`createMany`. Crée 1 tenant (Clinique du Plateau, Cocody, plan Pro), 5 médecins (Dr. Aya Kouassi, Dr. Konan Yao, Dr. Fatou Traoré, Dr. Ibrahim Cissé, Dr. Mariam Bamba) + 1 secrétaire + 1 admin cabinet, 10 patients (noms ivoiriens, codes CI-CP-0001→0010, groupes sanguins, allergies/chroniques en JSON, assurances CNPS/mutuelle), 8 RDV (présentiel + téléconsult Daily.co, statuts variés), 6 factures avec TVA 18 % et paiements Mobile Money Orange/Wave/MTN/espèces, 1 abonnement SaaS Pro 75 000 FCFA/mois, entrées AuditLog. Commentaires FR.
+   226→   226→  • `README.md` : instructions db:push/db:generate/db:migrate/db:seed, explication multi-tenant (isolation applicative par tenantId + RLS Supabase en prod avec politique `tenant_id = current_setting('app.tenant_id')`), conformité Loi 2013-450 (af-south-1, AES-256, AuditLog, anonymisation).
+   227→   227→- Création du package **@medisaas/ui-kit** (`packages/ui-kit/src/`) — composants métier autonomes (pas de dépendance directe à shadcn, style shadcn via cva), TypeScript strict, JSDoc FR :
+   228→   228→  • `lib/cn.ts` : `cn()` via clsx + tailwind-merge.
+   229→   229→  • `lib/colors.ts` : `MEDICAL_COLORS` (#0EA5E9/#10B981/#F59E0B/#EF4444), `MOBILE_MONEY_COLORS` (Orange #FF7900, Wave #1DC8FF, MTN #FFCC00), `BLOOD_TYPE_COLORS` (8 groupes), `AVATAR_COLOR_PALETTE` (10 classes sans indigo/bleu), `pickAvatarColor` (hash déterministe).
+   230→   230→  • `components/medical-badge.tsx` : `<MedicalBadge variant="blood|insurance|status|payment" value=… />`. Variant blood = couleur dérivée du groupe sanguin ; variant status = couleur dérivée du statut (planifié/confirmé/payée/annulée…). cva + VariantProps.
+   231→   231→  • `components/patient-avatar.tsx` : `<PatientAvatar firstName lastName size="sm|md|lg|xl" online />` — initiales calculées, couleur déterministe ou explicite, indicateur en ligne optionnel.
+   232→   232→  • `components/payment-method-badge.tsx` : `<PaymentMethodBadge method="orange_money|wave|mtn_money|card|cash" size showAbbr labelOnly />` — couleurs exactes des marques (Orange #FF7900, Wave #1DC8FF, MTN #FFCC00, CB violet, Cash emerald), abréviation en pastille.
+   233→   233→  • `components/fcfa-amount.tsx` : `<FcfaAmount amount=… size variant bold compact prefix subtleCurrency />` — formatage `Intl.NumberFormat("fr-FR")`, mode compact (4,8 M FCFA / 75 k FCFA), variantes default/muted/success/danger/warning.
+   234→   234→  • `components/stat-card.tsx` : `<StatCard label value icon=LucideIcon trend=12.5 trendLabel hint tone="blue|green|orange|red|neutral" />` — KPI avec icône, tendance hausses/baisse (TrendingUp/Down), tone coloré. cva.
+   235→   235→  • `components/empty-state.tsx` : `<EmptyState icon title description action size compact />` — état vide standard (border-dashed, icône centrée, CTA optionnel).
+   236→   236→  • `components/conformity-badge.tsx` : `<ConformityBadge variant="default|compact|pill" label showIcon />` — badge "Conforme Loi 2013-450" avec icône ShieldCheck.
+   237→   237→  • `index.ts` : barrel export de tous les composants + utilitaires + types.
+   238→   238→- Vérifications :
+   239→   239→  • `bunx eslint packages/` → EXIT 0 (aucune erreur/warning sur les 3 packages).
+   240→   240→  • `bunx tsc --noEmit --strict` sur `packages/shared-types/src/index.ts`, `packages/ui-kit/src/index.ts` et `packages/database/seed/index.ts` → 0 erreur.
+   241→   241→  • `bun run lint` racine → 2 erreurs résiduelles dans `apps/api/src` (auth.module.ts require-import + patients.service.ts type `{}`) : fichiers appartenant à Task 3-b (NestJS), NON aux packages 3-a — laissés intacts volontairement pour ne pas empiéter sur le périmètre du prochain agent.
+   242→   242→  • dev.log propre — Next.js 16 compile et sert GET / 200 ; les packages sont purs modules de monorepo (aucun impact sur `src/`).
+   243→   243→
+   244→   244→Stage Summary:
+   245→   245→- 3 packages livrés et consommables par les apps web/api du monorepo :
+   246→   246→  - `@medisaas/shared-types` (10 fichiers, ~700 lignes) — types & helpers front/back, JSDoc FR.
+   247→   247→  - `@medisaas/database` (schema.prisma + seed/index.ts + README.md) — schéma centralisé multi-tenant + seed CI ivoirien + doc RLS Supabase.
+   248→   248→  - `@medisaas/ui-kit` (7 composants + lib cn/colors) — MedicalBadge, PatientAvatar, PaymentMethodBadge, FcfaAmount, StatCard, EmptyState, ConformityBadge, palette médicale + Mobile Money respectée (#0EA5E9/#10B981/#F59E0B/#EF4444 + Orange #FF7900/Wave #1DC8FF/MTN #FFCC00).
+   249→   249→- Fichiers produits :
+   250→   250→  - packages/shared-types/src/{index,roles,patient,appointment,prescription,billing,subscription,api,tenant,utils}.ts
+   251→   251→  - packages/database/{schema.prisma, seed/index.ts, README.md}
+   252→   252→  - packages/ui-kit/src/{index.ts, lib/cn.ts, lib/colors.ts, components/{medical-badge,patient-avatar,payment-method-badge,fcfa-amount,stat-card,empty-state,conformity-badge}.tsx}
+   253→   253→- 0 modification de `src/lib/types.ts` ni de `src/` en général (Next.js intact). Lint packages 100% vert, typecheck strict OK.
+   254→   254→
+   255→   255→---
+   256→   256→Task ID: 3-b
+   257→   257→Agent: full-stack-developer (NestJS API)
+   258→   258→Task: apps/api — structure backend NestJS (modules, guards, decorators, interceptors, filters, config)
+   259→   259→
+   260→   260→Work Log:
+   261→   261→- Lecture worklog Task 1 + Task 3 (fondation, schéma Prisma multi-tenant, 6 rôles RBAC, palette médicale, middleware Next.js) + lecture `prisma/schema.prisma` (Tenant, User, Patient, Appointment, Consultation, Prescription, Invoice, Payment, Subscription, AuditLog) et `src/lib/types.ts` (6 rôles, PaymentMethod, InvoiceStatus...).
+   262→   262→- Création de `packages/shared-types/src/index.ts` minimal (UserRole, JwtPayload, ApiResponse, PaginationParams, PaginatedResult, types métier) pour résoudre les imports TypeScript du backend. L'agent 3-a pourra étendre ce fichier.
+   263→   263→- Écriture des **40 fichiers TypeScript** sous `apps/api/src/` :
+   264→   264→  • `main.ts` : bootstrap NestJS — helmet (CSP, HSTS, X-Frame-Options), CORS strict (origines .env), préfixe global `/api`, ValidationPipe (whitelist + transform), HttpExceptionFilter global, Swagger sur `/api/docs` (désactivé en prod), enableShutdownHooks, écoute `process.env.API_PORT ?? 4000`.
+   265→   265→  • `app.module.ts` : ConfigModule (load appConfig + databaseConfig + jwtConfig), ThrottlerModule (100 req/min + 10 req/min auth), ScheduleModule.forRoot(), PrismaModule global, 10 modules métier, ThrottlerGuard global + 3 interceptors globaux (Logging → Audit → Transform).
+   266→   266→  • `config/` : configuration.ts (interface AppConfig typée + registerAs "app"), database.config.ts (PostgreSQL af-south-1), jwt.config.ts (access 1h + refresh 7j), swagger.config.ts (DocumentBuilder avec tags par module, Bearer JWT, description Loi 2013-450).
+   267→   267→  • `prisma/` : prisma.service.ts (@Injectable extends PrismaClient, onModuleInit → $connect, onModuleDestroy → $disconnect, Logger), prisma.module.ts (@Global).
+   268→   268→  • `common/guards/` : jwt-auth.guard.ts (bypass @Public via Reflector), roles.guard.ts (lit @Roles metadata, compare à user.role, super_admin bypass, ForbiddenException), tenant.guard.ts (extrait tenantId du JWT → req.tenantId, null pour super_admin, 403 si manquant).
+   269→   269→  • `common/decorators/` : public.decorator.ts (@Public + IS_PUBLIC_KEY), roles.decorator.ts (@Roles + ROLES_KEY), current-user.decorator.ts (@CurrentUser() → req.user JwtPayload), current-tenant.decorator.ts (@CurrentTenant() → req.tenantId).
+   270→   270→  • `common/interceptors/` : logging.interceptor.ts (METHOD URL → STATUS Xms avec userId/tenantId/ip/ua), audit.interceptor.ts (@Audit(action, entity) → écriture AuditLog immuable Loi 2013-450 art. 33/44), transform.interceptor.ts (enveloppe ApiResponse<T> { success, data, statusCode, timestamp, path }).
+   271→   271→  • `common/filters/` : http-exception.filter.ts (format unifié { success: false, error: {code, details}, message, statusCode, timestamp, path }, logging 5xx pour Sentry).
+   272→   272→  • `common/pipes/` : zod-validation.pipe.ts (ZodSchema.parse + BadRequestException formaté).
+   273→   273→  • `common/dto/` : pagination.dto.ts (Zod page/pageSize/search/sortBy/sortOrder + helper toPrismaSkip).
+   274→   274→  • `modules/auth/` : auth.module.ts (PassportModule + JwtModule access + JwtService "JWT_REFRESH" + 3 APP_GUARD JwtAuthGuard/TenantGuard/RolesGuard), auth.controller.ts (POST /auth/login, /auth/register, /auth/refresh — tous @Public), auth.service.ts (bcrypt.compare 12 rounds + issueTokens access/refresh + Supabase Auth mentionné en commentaire alternative), strategies/jwt.strategy.ts (PassStrategy jwt + validate payload + 6 rôles validés), dto/login.dto.ts (Zod email + password ≥8), dto/register.dto.ts (politique mot de passe regex + numéro CI +225 + refine médecin specialty/license).
+   275→   275→  • `modules/patients/` : module/controller/service + dto/create + dto/update. CRUD DPN multi-tenant, code patient CI-CP-XXXX généré, allergies/chronicConditions JSON, soft-delete (status inactif — Loi 2013-450 conservation dossiers). @Roles admin_cabinet/medecin/secretaire/comptable/patient.
+   276→   276→  • `modules/appointments/` : module/controller/service + dto create/update. CRUD RDV + détection conflit horaire médecin (overlap). @Roles admin_cabinet/medecin/secretaire/patient. Filtres doctorId/status/from/to.
+   277→   277→  • `modules/medical-records/` : module/controller/service + dto unique. Consultations (compte-rendu + signes vitaux + diagnostic + traitement, marque RDV terminé), Ordonnances (numéro ORD-YYYY-XXXX, medications JSON, validité), vue DPN agrégée getPatientMedicalSummary. @Roles medecin/admin_cabinet pour écriture, lecture pour patient.
+   278→   278→  • `modules/billing/` : module/controller/service + cinetpay.service + dto. Factures (numéro FAC-YYYY-XXXXX, TVA 18% CI, items JSON, statut impayee/payee/partielle/annulee), paiements Mobile Money (initiatePayment via CinetPay → payment_url, verifyPayment, handleWebhook idempotent, recomputeInvoiceStatus), webhook CinetPay @Public, getStats (KPIs facturation). cinetpay.service.ts : URLs officielles https://api-checkout.cinetpay.com/v2, channels MOBILE_MONEY/CREDIT_CARD/WAVE, currency XOF, metadata invoiceId+tenantId uniquement (jamais de données médicales).
+   279→   279→  • `modules/teleconsultation/` : module/controller + daily.service. Daily.co API https://api.daily.co/v1 — createRoom (privacy=private par défaut, enable_recording=false Loi 2013-450, exp 4h), getRoomUrl, endRoom (DELETE), createMeetingToken (is_owner pour médecin, 1h TTL). @Roles medecin/admin_cabinet.
+   280→   280→  • `modules/notifications/` : module/controller + 3 services. sms.service.ts (Africa's Talking, POST /messaging, senderId "MediSaaS", normalisation +225 XX XX XX XX XX), whatsapp.service.ts (Meta Cloud API https://graph.facebook.com/v18.0, sendTemplate avec language + parameters), email.service.ts (Resend POST /emails, fromEmail MediSaaS CI, substitution {{var}}). Controller /notifications/*/*test réservé admin_cabinet.
+   281→   281→  • `modules/analytics/` : module/controller/service. getDashboard(period 7d/30d/90d/12m/ytd) — KPIs (revenus, consultations, RDV, newPatients, activePatients, collectionRate, noShowRate), revenueByMonth, paymentDistribution, appointmentsByStatus, topDoctors (avec revenus agrégés), patientsByCommune. @Roles admin_cabinet/comptable.
+   282→   282→  • `modules/subscriptions/` : module/controller/service + dto. getCurrent, changePlan (PLAN_PRICING essentiel/pro/entreprise mensuel+annuel), updatePaymentMethod, cancel (préavis 30j sauf immediate=true, mention suppression données 90j Loi 2013-450), checkUsage (seatsUsed vs seatsLimit, patientsCount, teleconsultationsThisMonth). @Roles admin_cabinet/super_admin.
+   283→   283→  • `modules/audit/` : module/controller/service. findAll paginé (filtres user/action/entity/from/to), exportRange (CSV pour conformité ARTCI), log() manuel pour actions système (crons, webhooks). @Roles admin_cabinet/super_admin. Mention art. 33 (droit accès), 44 (conservation ≥12 mois), 51 (responsabilité).
+   284→   284→- Conformité Loi 2013-450 mentionnée dans commentaires : isolation multi-tenant (TenantGuard), chiffrement AES-256 (config.encryption), hébergement af-south-1 (config.storage.region), audit immuable (AuditInterceptor + AuditService), soft-delete patients (conservation dossiers médicaux), préavis résiliation + suppression différée, opt-in SMS/WhatsApp, aucune donnée médicale loggée ni envoyée à CinetPay/Daily.co.
+   285→   285→- Références `@medisaas/shared-types` via import relatif `../../../../packages/shared-types/src` (JwtPayload, UserRole, ApiResponse, PaginatedResult) comme demandé.
+   286→   286→- `bun run lint` initial : 4 problèmes (3 erreurs + 1 warning) :
+   287→   287→  1. `main.ts` : `// eslint-disable-next-line no-console` inutile (règle déjà off) → supprimé.
+   288→   288→  2. `audit.service.ts` : `Prisma.AuditLogGetPayload<{}>` type empty object → remplacé par `<Record<string, never>>`.
+   289→   289→  3. `patients.service.ts` : `Prisma.PatientGetPayload<{}>` → ajout `// eslint-disable-next-line @typescript-eslint/no-empty-object-type` (idiome Prisma standard).
+   290→   290→  4. `auth.module.ts` : `require("@nestjs/jwt")` interdit → remplacé par `new JwtService(...)` via import statique (déjà présent en haut du fichier).
+   291→   291→- `bun run lint` final : EXIT 0 (0 erreur, 0 warning). Serveur Next.js toujours actif sur port 3000 (dev.log propre).
+   292→   292→
+   293→   293→Stage Summary:
+   294→   294→- 40 fichiers TypeScript NestJS produits sous `apps/api/src/` + 1 fichier `packages/shared-types/src/index.ts` amorcé.
+   295→   295→- Structure complète demandée livrée : `main.ts`, `app.module.ts`, `config/` (4), `common/` (guards 3 + decorators 4 + interceptors 3 + filters 1 + pipes 1 + dto 1), `prisma/` (2), `modules/` (10 modules × 3-5 fichiers = 30 fichiers).
+   296→   296→- Code production-ready (non exécuté dans le sandbox — Next.js tourne sur port 3000) : TypeScript strict, JSDoc FR sur toutes classes/méthodes publiques, validation Zod sur tous les DTO, RBAC @Roles + RolesGuard, multi-tenant @CurrentTenant + TenantGuard, interceptors globaux (Logging + Audit + Transform), filter unifié, Swagger /api/docs.
+   297→   297→- Intégrations tierces câblées : CinetPay (Mobile Money Orange/Wave/MTN/CB), Daily.co (téléconsultation E2E), Africa's Talking (SMS), WhatsApp Cloud API, Resend (email). Conformité Loi 2013-450 documentée dans commentaires (audit immuable, chiffrement AES-256, hébergement af-south-1, soft-delete, préavis résiliation, opt-in notifs, aucune donnée médicale transmise aux tiers).
+   298→   298→- Lint propre, prêt pour intégration monorepo. Le frontend Next.js peut consommer ces routes via fetch relatif `/api/...?XTransformPort=4000` une fois l'API démarrée.
+   299→   299→
+   300→   300→---
+   301→   301→Task ID: 3-c
+   302→   302→Agent: full-stack-developer (Supabase + Docs)
+   303→   303→Task: supabase/migrations + functions + seed.sql + docs/ technique
+   304→   304→
+   305→   305→Work Log:
+   306→   306→- Lecture du worklog (Task 1, 2-a/b/c/d, 8b+9, 3) pour contexte : MediSaaS CI SaaS médical CI, multi-tenant, 6 rôles, Loi 2013-450, Mobile Money, Daily.co, af-south-1. Schéma Prisma source de vérité (10 modèles).
+   307→   307→- Création `supabase/migrations/20240115100000_init_tenants_rls.sql` : 10 tables snake_case, fonctions `get_current_tenant_id()` / `get_current_user_id()` (SECURITY DEFINER, lisent JWT `auth.jwt()`), RLS activée + politiques SELECT/INSERT/UPDATE/DELETE par table avec filtrage `tenant_id` + restrictions par rôle via `app_metadata.role`, index multi-tenant, trigger `touch_updated_at()`.
+   308→   308→- Création `supabase/migrations/20240115101000_audit_trigger.sql` : fonction `audit_log_change()` (SECURITY DEFINER) qui journalise INSERT/UPDATE/DELETE sur `patients` et `prescriptions` dans `audit_logs` (action, entity, entity_id, user_id, tenant_id, old_data, new_data, metadata). 6 triggers AFTER créés. Commentaire de table pour rétention 10 ans Loi 2013-450.
+   309→   309→- Création `supabase/migrations/20240115102000_patient_code_sequence.sql` : colonne `code_prefix` sur tenants, table `patient_code_seq`, fonction `generate_patient_code(tenant uuid)` (atomicité via `ON CONFLICT DO UPDATE ... FOR UPDATE`, formatage `CI-{PREFIX}-{NNNN}`), trigger BEFORE INSERT `set_patient_code()`.
+   310→   310→- Création `supabase/migrations/20240115103000_encryption_helper.sql` : extension `pgcrypto`, `encrypt_medical_data(text)` / `decrypt_medical_data(bytea)` (AES-256, clé via `current_setting('app.encryption_key')`), `rotate_medical_encryption()` pour rotation annuelle, colonnes `_enc` sur consultations/prescriptions/patients, triggers de chiffrement automatique BEFORE INSERT/UPDATE, vue `consultations_decrypted` (security_invoker).
+   311→   311→- Création `supabase/functions/cinetpay-webhook/index.ts` (`// @ts-nocheck`) : `Deno.serve()`, vérifie signature HMAC SHA-256, appelle CinetPay `/payment/check` (anti-fraude), met à jour `payments` + `invoices`, SMS patient via Africa's Talking, audit `payment.success`.
+   312→   312→- Création `supabase/functions/daily-webhook/index.ts` : vérifie signature HMAC, gère `meeting.started` (RDV → `en_cours`) et `meeting.ended` (RDV → `termine` + durée), audit `teleconsultation.start` / `.end`. Recordings désactivés rappel Loi 2013-450.
+   313→   313→- Création `supabase/functions/sms-reminder-cron/index.ts` : cron horaire, RDV J+1 (24h-48h) avec jointures patients/users/tenants, filtre `sms_consent`, SMS Africa's Talking, audit `sms.reminder.sent` / `.failed`.
+   314→   314→- Création `supabase/functions/whatsapp-reminder/index.ts` : template WhatsApp Business Cloud API (Meta Graph), authentification `INTERNAL_API_SECRET`, validation numéro (8-15 chiffres), audit `whatsapp.reminder.sent` / `.failed`.
+   315→   315→- Création `supabase/seed.sql` : 1 tenant (Clinique du Plateau, Cocody, plan Pro, code_prefix `CP`), 8 utilisateurs (5 médecins + admin + secrétaire + comptable), 10 patients ivoiriens (codes CI-CP-0001 à 0010), 8 RDV (dont 2 téléconsult Daily.co), 3 consultations, 5 ordonnances, 6 factures (TVA 18%), 3 paiements Mobile Money (Orange/Wave/MTN), 1 abonnement SaaS Pro, 2 audit logs initiaux.
+   316→   316→- Création `docs/README.md` (index + vue d'ensemble + stack + rôles).
+   317→   317→- Création `docs/ARCHITECTURE.md` (monorepo Turborepo, schémas Mermaid, multi-tenant RLS+JWT+RBAC, chiffrement AES-256+TLS 1.3, hébergement Vercel+AWS af-south-1, topologie ASCII, Edge Functions).
+   318→   318→- Création `docs/API.md` (convention `ApiResponse<T>`, pagination, codes erreur, 10 groupes d'endpoints avec méthode/URL/rôles/body/réponse, rate limiting, versionnement).
+   319→   319→- Création `docs/DEPLOYMENT.md` (topologie, variables d'env, CI/CD GitHub Actions, migrations Supabase/Prisma, monitoring Sentry/PostHog, backups PITR, rollback, procédure incident).
+   320→   320→- Création `docs/CONFORMITY.md` (Loi 2013-450 + ARTCI, registre traitements, 5 droits patients, consentement, rétention 10 ans, audit logs, chiffrement, hébergement africain art. 41, mapping exhaustif article → implémentation, procédure audit ARTCI).
+   321→   321→- Création `docs/MOBILE_MONEY.md` (CinetPay Orange/Wave/MTN/CB/Moov, flux 7 étapes, sécurité HMAC+idempotence, échecs, remboursements, réconciliation, webhooks sécurité, sandbox, conformité BCEAO/PCI-DSS/TVA 18%).
+   322→   322→- Création `docs/TELECONSULTATION.md` (Daily.co E2E, création salles, tokens d'accès, consentement patient + modal, recordings DÉSACTIVÉS, webhooks, notes chiffrées, qualité service + fallback audio, conformité).
+   323→   323→- Création `docs/ONBOARDING.md` (4 étapes : création tenant → import patients → config équipe → go-live, checklists, code NestJS, KPIs J+30, conversion essai → actif, résiliation, contact support).
+   324→   324→- Ajustement `eslint.config.mjs` : ajout de `supabase/**`, `docs/**`, `apps/**`, `packages/**`, `download/**` aux ignores (Edge Functions Deno utilisent des globales non Next.js).
+   325→   325→- Ajustement `tsconfig.json` : exclusion de `supabase/functions/**`, `apps/api/**`, `packages/**` du typecheck.
+   326→   326→- `bun run lint` → EXIT 0. dev.log propre, GET / 200.
+   327→   327→
+   328→   328→Stage Summary:
+   329→   329→- Couche Supabase production-ready livrée : 4 migrations SQL horodatées (RLS multi-tenant + JWT, triggers d'audit Loi 2013-450, séquence code patient CI-CP-NNNN, chiffrement AES-256 pgcrypto) + 4 Edge Functions Deno (webhooks CinetPay + Daily.co, cron SMS J-1, WhatsApp reminder) + 1 seed SQL (Clinique du Plateau complet, contexte ivoirien).
+   330→   330→- Documentation technique exhaustive en français : 8 fichiers Markdown (README index, ARCHITECTURE, API, DEPLOYMENT, CONFORMITY, MOBILE_MONEY, TELECONSULTATION, ONBOARDING) avec schémas Mermaid/ASCII, exemples de code SQL/TypeScript, mapping conformité Loi 2013-450, procédures CI/CD et onboarding.
+   331→   331→- Fichiers produits :
+   332→   332→  - `supabase/migrations/20240115100000_init_tenants_rls.sql`
+   333→   333→  - `supabase/migrations/20240115101000_audit_trigger.sql`
+   334→   334→  - `supabase/migrations/20240115102000_patient_code_sequence.sql`
+   335→   335→  - `supabase/migrations/20240115103000_encryption_helper.sql`
+   336→   336→  - `supabase/functions/cinetpay-webhook/index.ts`
+   337→   337→  - `supabase/functions/daily-webhook/index.ts`
+   338→   338→  - `supabase/functions/sms-reminder-cron/index.ts`
+   339→   339→  - `supabase/functions/whatsapp-reminder/index.ts`
+   340→   340→  - `supabase/seed.sql`
+   341→   341→  - `docs/{README,ARCHITECTURE,API,DEPLOYMENT,CONFORMITY,MOBILE_MONEY,TELECONSULTATION,ONBOARDING}.md`
+   342→   342→  - `agent-ctx/3-c-full-stack-developer.md`
+   343→   343→- Lint propre (ESLint ignores mis à jour pour supabase/docs/apps/packages), TypeScript (tsconfig exclude mis à jour), serveur dev opérationnel. Aucune régression sur l'existant.
+   344→   344→
+   345→   345→---
+   346→   346→Task ID: 3-final
+   347→   347→Agent: Z.ai (orchestrateur)
+   348→   348→Task: Intégration finale monorepo + vérification Agent Browser
+   349→   349→
+   350→   350→Work Log:
+   351→   351→- 3 subagents parallèles terminés : packages (3-a), apps/api NestJS (3-b, 64 fichiers), supabase+docs (3-c, 9+8 fichiers).
+   352→   352→- Palette médicale appliquée et vérifiée visuellement (landing + dashboard + facturation + mobile).
+   353→   353→- Middleware RBAC déployé (avec warning Next.js 16 sur "middleware" → "proxy" — conservé car nom demandé par l'utilisateur).
+   354→   354→- Lint exit 0 sur tout le monorepo.
+   355→   355→- Serveur dev HTTP 200 sur port 3000.
+   356→   356→- Structure monorepo complète :
+   357→   357→  * apps/web (package.json) + apps/api (64 fichiers NestJS : main.ts, app.module, config×4, common/guards+decorators+interceptors+filters+pipes+dto, modules auth/patients/appointments/medical-records/billing/teleconsultation/notifications/analytics/subscriptions/audit, prisma service)
+   358→   358→  * packages/shared-types (10 fichiers types TS), packages/database (schema.prisma + seed + README), packages/ui-kit (7 composants métier)
+   359→   359→  * supabase/migrations (4 SQL : RLS, audit trigger, séquence code patient, chiffrement AES-256) + functions (4 Edge Functions Deno : cinetpay-webhook, daily-webhook, sms-reminder-cron, whatsapp-reminder) + seed.sql
+   360→   360→  * docs/ (8 fichiers Markdown : ARCHITECTURE, API, DEPLOYMENT, CONFORMITY, MOBILE_MONEY, TELECONSULTATION, ONBOARDING, README)
+   361→   361→- Vérification Agent Browser : landing (palette bleue) → dashboard → Facturation (1 198 290 FCFA, Mobile Money) → mobile 390px. Tout OK.
+   362→   362→
+   363→   363→Stage Summary:
+   364→   364→- Le monorepo Turborepo MediSaaS CI est COMPLET : configs racine (turbo.json, docker-compose, .env.example exhaustif, prettier/eslint/husky), palette médicale exacte (#0EA5E9/#10B981/#F59E0B/#EF4444), middleware RBAC, 3 packages partagés, backend NestJS structuré (10 modules), couche Supabase (RLS + audit + chiffrement + 4 Edge Functions), 8 docs techniques.
+   365→   365→- L'app Next.js reste l'app exécutable (src/ = apps/web), les autres artefacts sont du code source production-ready prêts à être branchés.
+   366→   366→
+   367→   367→---
+   368→   368→Task ID: 4-foundation
+   369→   369→Agent: Z.ai (orchestrateur)
+   370→   370→Task: Système d'authentification — fondation (SQL, store, client auth, API, middleware, email)
+   371→   371→
+   372→   372→Work Log:
+   373→   373→- Migration SQL `supabase/migrations/20240115104000_auth_schema_rls.sql` : 4 tables exactes (tenants, users, doctors, audit_logs) selon spec + fonctions get_current_user_id/tenant_id/role/is_subscription_active + RLS activée + politiques strictes (isolation par tenant, patient ne voit que son profil, audit_logs réservés admin) + triggers updated_at + audit automatique (INSERT/UPDATE/DELETE) + trigger handle_new_user (création profil à l'inscription Supabase) + trigger last_login.
+   374→   374→- Store Zustand étendu : authScreen (login|register|forgot|verify), authUser, isAuthenticated, actions showAuth/hideAuth/authenticate/signOut. enterDashboard crée maintenant un authUser.
+   375→   375→- `src/lib/auth.ts` : client auth mock (signIn, signInWithGoogle, signUp, requestPasswordReset, getStoredSession, signOut, checkSubscription) — 5 comptes démo (admin/medecin/secretaire/comptable/patient, password demo1234).
+   376→   376→- `src/lib/validations/auth.ts` : schémas Zod (loginSchema, registerStep1/2/3Schema, forgotPasswordSchema) avec téléphone ivoirien +123 07/05/01/27, password 8+ caractères + majuscule + chiffre.
+   377→   377→- Routes API : /api/auth/login, /register, /forgot-password, /verify-email, /logout, /session.
+   378→   378→- Template email Resend `src/lib/email-templates/reset-password.tsx` : FR, bouton CTA, lien secours, bandeau sécurité Loi 2013-450, footer Cocody Abidjan.
+   379→   379→- Middleware `src/middleware.ts` réécrit avec matrice d'accès EXACTE de l'utilisateur (/admin→super_admin, /patient→patient, /dashboard/patients→medecin/secretaire/admin_cabinet, /dashboard/billing→admin_cabinet/comptable, /dashboard/settings→admin_cabinet, /dashboard→tous) + vérification abonnement (redirect /billing si expiré) + audit access + headers sécurité.
+   380→   380→
+   381→   381→Stage Summary:
+   382→   382→- Fondation auth complète. Le subagent 4-a construit les 4 écrans UI (login, register wizard 3 étapes, forgot, verify).
+   383→   383→- Contrat pour le subagent : composants dans `src/components/medisisaas/auth/`, utilisent `useAppStore` (showAuth/hideAuth/authenticate/signOut), `@/lib/auth` (signIn/signInWithGoogle/signUp/requestPasswordReset), `@/lib/validations/auth` (schémas Zod + zodResolver), `@/components/medisisaas/brand`. Palette médicale (#0EA5E9 primary, #10B981 secondary, #F59E0B accent, #EF4444 danger). react-hook-form pour les formulaires.
+   384→   384→- Comptes démo : admin@clinique-plateau.ci / demo1234 (et medecin/secretaire/comptable/patient@...).
+   385→   385→

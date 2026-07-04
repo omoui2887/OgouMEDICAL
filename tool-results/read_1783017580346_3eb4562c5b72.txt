@@ -1,0 +1,1293 @@
+     1→"use client";
+     2→
+     3→import { useState } from "react";
+     4→import { motion } from "framer-motion";
+     5→import {
+     6→  Stethoscope,
+     7→  CalendarDays,
+     8→  FileText,
+     9→  Pill,
+    10→  CreditCard,
+    11→  Video,
+    12→  UserSquare2,
+    13→  Repeat2,
+    14→  BarChart3,
+    15→  Rocket,
+    16→  Menu,
+    17→  ShieldCheck,
+    18→  Lock,
+    19→  Server,
+    20→  Building2,
+    21→  MessageSquare,
+    22→  Smartphone,
+    23→  Sparkles,
+    24→  Check,
+    25→  Star,
+    26→  ArrowRight,
+    27→  ArrowUpRight,
+    28→  Users,
+    29→  Activity,
+    30→  Wallet,
+    31→  Bell,
+    32→  Database,
+    33→  Globe2,
+    34→  CloudUpload,
+    35→  ClipboardList,
+    36→  Phone,
+    37→  Mail,
+    38→  MapPin,
+    39→  ChevronRight,
+    40→} from "lucide-react";
+    41→
+    42→import { useAppStore } from "@/lib/store";
+    43→import { Brand, BrandMark } from "@/components/medisisaas/brand";
+    44→import { Button } from "@/components/ui/button";
+    45→import { Badge } from "@/components/ui/badge";
+    46→import {
+    47→  Sheet,
+    48→  SheetContent,
+    49→  SheetTrigger,
+    50→  SheetTitle,
+    51→  SheetClose,
+    52→} from "@/components/ui/sheet";
+    53→import { cn } from "@/lib/utils";
+    54→import { PLANS, TENANT } from "@/lib/mock-data";
+    55→import { formatFCFA } from "@/lib/types";
+    56→
+    57→// ============================================================
+    58→// Helpers locaux
+    59→// ============================================================
+    60→const fadeUp = {
+    61→  hidden: { opacity: 0, y: 24 },
+    62→  visible: (i = 0) => ({
+    63→    opacity: 1,
+    64→    y: 0,
+    65→    transition: { duration: 0.5, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] as const },
+    66→  }),
+    67→};
+    68→
+    69→const stagger = {
+    70→  hidden: {},
+    71→  visible: { transition: { staggerChildren: 0.05 } },
+    72→};
+    73→
+    74→const NAV_LINKS = [
+    75→  { href: "#modules", label: "Modules" },
+    76→  { href: "#pourquoi", label: "Pourquoi nous" },
+    77→  { href: "#etapes", label: "Comment ça marche" },
+    78→  { href: "#tarifs", label: "Tarifs" },
+    79→  { href: "#conformite", label: "Conformité" },
+    80→  { href: "#contact", label: "Contact" },
+    81→];
+    82→
+    83→// 10 modules principaux
+    84→const MODULES = [
+    85→  {
+    86→    icon: BarChart3,
+    87→    title: "Tableau de bord",
+    88→    desc: "Vue temps réel : RDV, revenus, charge médecins.",
+    89→    color: "from-teal-500 to-emerald-600",
+    90→  },
+    91→  {
+    92→    icon: CalendarDays,
+    93→    title: "Rendez-vous en ligne",
+    94→    desc: "Agenda interactif, rappels SMS & WhatsApp.",
+    95→    color: "from-orange-500 to-amber-600",
+    96→  },
+    97→  {
+    98→    icon: FileText,
+    99→    title: "Dossier Patient Numérique",
+   100→    desc: "Antécédents, allergies, constants, historique.",
+   101→    color: "from-emerald-500 to-teal-600",
+   102→  },
+   103→  {
+   104→    icon: Pill,
+   105→    title: "Ordonnances électroniques",
+   106→    desc: "Prescription numérique, sécurité & traçabilité.",
+   107→    color: "from-rose-500 to-orange-500",
+   108→  },
+   109→  {
+   110→    icon: CreditCard,
+   111→    title: "Facturation & Mobile Money",
+   112→    desc: "Orange, Wave, MTN via CinetPay, en un clic.",
+   113→    color: "from-amber-500 to-orange-600",
+   114→  },
+   115→  {
+   116→    icon: Video,
+   117→    title: "Téléconsultation vidéo",
+   118→    desc: "Visio HD sécurisée, intégrée Daily.co.",
+   119→    color: "from-teal-600 to-cyan-600",
+   120→  },
+   121→  {
+   122→    icon: UserSquare2,
+   123→    title: "Portail patient",
+   124→    desc: "Espace patient : RDV, documents, paiements.",
+   125→    color: "from-emerald-600 to-green-600",
+   126→  },
+   127→  {
+   128→    icon: Repeat2,
+   129→    title: "Abonnements SaaS",
+   130→    desc: "Gestion plans, sièges, factures récurrentes.",
+   131→    color: "from-orange-600 to-rose-500",
+   132→  },
+   133→  {
+   134→    icon: Activity,
+   135→    title: "Analytique avancée",
+   136→    desc: "Revenus, file active, performance par spécialité.",
+   137→    color: "from-teal-500 to-cyan-500",
+   138→  },
+   139→  {
+   140→    icon: Rocket,
+   141→    title: "Onboarding cabinet",
+   142→    desc: "Mise en route guidée, import patients CSV.",
+   143→    color: "from-emerald-500 to-teal-500",
+   144→  },
+   145→];
+   146→
+   147→// Pourquoi MediSaaS CI
+   148→const REASONS = [
+   149→  {
+   150→    icon: Building2,
+   151→    title: "Multi-tenant isolé",
+   152→    desc: "Chaque cabinet dispose de sa base dédiée. Données jamais mélangées, isolation complète par tenant.",
+   153→  },
+   154→  {
+   155→    icon: ShieldCheck,
+   156→    title: "Conformité Loi 2013-450 & ARTCI",
+   157→    desc: "Respect de la loi ivoirienne sur la protection des données personnelles et des exigences de l'ARTCI.",
+   158→  },
+   159→  {
+   160→    icon: Lock,
+   161→    title: "Chiffrement AES-256",
+   162→    desc: "Toutes les données patients sont chiffrées au repos et en transit. Accès journalisés et auditables.",
+   163→  },
+   164→  {
+   165→    icon: Smartphone,
+   166→    title: "Mobile Money natif",
+   167→    desc: "Orange Money, Wave, MTN Money via CinetPay. Encaissement immédiat des consultations et ordonnances.",
+   168→  },
+   169→  {
+   170→    icon: Video,
+   171→    title: "Téléconsultation Daily.co",
+   172→    desc: "Visio haute qualité intégrée au dossier patient. Aucune installation côté médecin ou patient.",
+   173→  },
+   174→  {
+   175→    icon: MessageSquare,
+   176→    title: "SMS & WhatsApp patients",
+   177→    desc: "Rappels automatiques de RDV via Africa's Talking et WhatsApp Business. Réduction des absences de 40%.",
+   178→  },
+   179→];
+   180→
+   181→// Étapes "Comment ça marche"
+   182→const STEPS = [
+   183→  {
+   184→    icon: Rocket,
+   185→    title: "Onboarding du cabinet",
+   186→    desc: "Créez votre espace, invitez vos médecins et secrétaires. Importez votre fichier patients en CSV.",
+   187→  },
+   188→  {
+   189→    icon: CloudUpload,
+   190→    title: "Import des patients",
+   191→    desc: "Vos dossiers existants sont intégrés en quelques minutes. Historique, allergies, antécédents.",
+   192→  },
+   193→  {
+   194→    icon: ClipboardList,
+   195→    title: "Consultations & ordonnances",
+   196→    desc: "Médecins consultent, prescrivent en numérique. Le dossier patient se met à jour automatiquement.",
+   197→  },
+   198→  {
+   199→    icon: Wallet,
+   200→    title: "Encaissements Mobile Money",
+   201→    desc: "Les patients règlent en Orange, Wave ou MTN. Factures et reçus envoyés par SMS et WhatsApp.",
+   202→  },
+   203→];
+   204→
+   205→// Témoignages
+   206→const TESTIMONIALS = [
+   207→  {
+   208→    name: "Dr. Aya Kouassi",
+   209→    role: "Médecin généraliste — Clinique Cocody",
+   210→    initials: "AK",
+   211→    color: "bg-teal-600",
+   212→    quote:
+   213→      "Depuis MediSaaS CI, j'ai divisé mon temps administratif par deux. Les ordonnances électroniques et les rappels SMS ont transformé mon cabinet.",
+   214→    rating: 5,
+   215→  },
+   216→  {
+   217→    name: "Dr. Konan Yao",
+   218→    role: "Cardiologue — Plateau, Abidjan",
+   219→    initials: "KY",
+   220→    color: "bg-rose-600",
+   221→    quote:
+   222→      "La téléconsultation intégrée est un game-changer pour mes patients d'Yopougon. La facturation Wave et Orange Money arrive instantanément.",
+   223→    rating: 5,
+   224→  },
+   225→  {
+   226→    name: "Mme Affoué Tanoh",
+   227→    role: "Secrétaire médicale — Yopougon",
+   228→    initials: "AT",
+   229→    color: "bg-orange-500",
+   230→    quote:
+   231→      "Plus d'agenda papier, plus de files d'attente. Les patients réservent en ligne et paient par Mobile Money. C'est simple et rapide.",
+   232→    rating: 5,
+   233→  },
+   234→];
+   235→
+   236→// Partenaires
+   237→const PARTNERS = [
+   238→  { name: "Paiement via CinetPay", color: "bg-teal-500" },
+   239→  { name: "Orange Money", color: "bg-orange-500" },
+   240→  { name: "Wave", color: "bg-sky-500" },
+   241→  { name: "MTN Money", color: "bg-yellow-400 text-yellow-950" },
+   242→  { name: "Africa's Talking SMS", color: "bg-emerald-500" },
+   243→  { name: "WhatsApp Business", color: "bg-green-500" },
+   244→  { name: "Daily.co téléconsultation", color: "bg-amber-500" },
+   245→];
+   246→
+   247→// Badges de conformité
+   248→const COMPLIANCE = [
+   249→  { icon: Server, title: "Hébergé en af-south-1", desc: "Données stockées en Afrique (Cape Town). Aucune sortie du continent." },
+   250→  { icon: ShieldCheck, title: "Loi n°2013-450", desc: "Conformité totale à la loi ivoirienne sur la protection des données." },
+   251→  { icon: Lock, title: "Chiffrement AES-256", desc: "Données chiffrées au repos et en transit. Journal d'audit complet." },
+   252→  { icon: Database, title: "Backups quotidiens", desc: "Sauvegardes automatiques chiffrées, rétention 30 jours." },
+   253→];
+   254→
+   255→// ============================================================
+   256→// Composant principal
+   257→// ============================================================
+   258→export function LandingPage() {
+   259→  const enterDashboard = useAppStore((s) => s.enterDashboard);
+   260→  const showAuth = useAppStore((s) => s.showAuth);
+   261→  const [mobileOpen, setMobileOpen] = useState(false);
+   262→  const [annual, setAnnual] = useState(false);
+   263→
+   264→  const handleEnter = () => enterDashboard("admin_cabinet");
+   265→  const handleLogin = () => showAuth("login");
+   266→  const handleRegister = () => showAuth("register");
+   267→
+   268→  return (
+   269→    <div className="flex min-h-screen flex-col bg-background">
+   270→      <Header
+   271→        mobileOpen={mobileOpen}
+   272→        setMobileOpen={setMobileOpen}
+   273→        onEnter={handleEnter}
+   274→        onLogin={handleLogin}
+   275→        onRegister={handleRegister}
+   276→      />
+   277→      <main className="flex-1">
+   278→        <Hero onEnter={handleEnter} />
+   279→        <Partners />
+   280→        <Modules />
+   281→        <WhyUs />
+   282→        <HowItWorks />
+   283→        <Testimonials />
+   284→        <Pricing annual={annual} setAnnual={setAnnual} onEnter={handleEnter} />
+   285→        <Compliance />
+   286→        <FinalCTA onEnter={handleEnter} />
+   287→      </main>
+   288→      <Footer />
+   289→    </div>
+   290→  );
+   291→}
+   292→
+   293→// ============================================================
+   294→// Header
+   295→// ============================================================
+   296→function Header({
+   297→  mobileOpen,
+   298→  setMobileOpen,
+   299→  onEnter,
+   300→  onLogin,
+   301→  onRegister,
+   302→}: {
+   303→  mobileOpen: boolean;
+   304→  setMobileOpen: (v: boolean) => void;
+   305→  onEnter: () => void;
+   306→  onLogin: () => void;
+   307→  onRegister: () => void;
+   308→}) {
+   309→  return (
+   310→    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+   311→      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+   312→        <a href="#top" className="flex items-center" aria-label="Accueil MediSaaS CI">
+   313→          <Brand size="md" />
+   314→        </a>
+   315→
+   316→        <nav className="hidden items-center gap-1 lg:flex">
+   317→          {NAV_LINKS.map((l) => (
+   318→            <a
+   319→              key={l.href}
+   320→              href={l.href}
+   321→              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+   322→            >
+   323→              {l.label}
+   324→            </a>
+   325→          ))}
+   326→        </nav>
+   327→
+   328→        <div className="hidden items-center gap-2 lg:flex">
+   329→          <Button variant="ghost" size="sm" onClick={onLogin}>
+   330→            Connexion
+   331→          </Button>
+   332→          <Button size="sm" onClick={onRegister} className="bg-teal-600 hover:bg-teal-700">
+   333→            Démarrer l'essai
+   334→            <ArrowRight className="h-4 w-4" />
+   335→          </Button>
+   336→        </div>
+   337→
+   338→        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+   339→          <SheetTrigger asChild>
+   340→            <Button
+   341→              variant="ghost"
+   342→              size="icon"
+   343→              className="lg:hidden"
+   344→              aria-label="Ouvrir le menu"
+   345→            >
+   346→              <Menu className="h-5 w-5" />
+   347→            </Button>
+   348→          </SheetTrigger>
+   349→          <SheetContent side="right" className="w-80">
+   350→            <SheetTitle className="px-4 pt-4">
+   351→              <span className="sr-only">Menu de navigation</span>
+   352→            </SheetTitle>
+   353→            <div className="flex items-center justify-between px-4">
+   354→              <Brand size="sm" />
+   355→            </div>
+   356→            <nav className="flex flex-col gap-1 px-4 pt-4">
+   357→              {NAV_LINKS.map((l) => (
+   358→                <SheetClose asChild key={l.href}>
+   359→                  <a
+   360→                    href={l.href}
+   361→                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+   362→                  >
+   363→                    {l.label}
+   364→                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+   365→                  </a>
+   366→                </SheetClose>
+   367→              ))}
+   368→            </nav>
+   369→            <div className="mt-auto flex flex-col gap-2 p-4">
+   370→              <Button variant="outline" onClick={onLogin} className="w-full">
+   371→                Connexion
+   372→              </Button>
+   373→              <Button
+   374→                onClick={onRegister}
+   375→                className="w-full bg-teal-600 hover:bg-teal-700"
+   376→              >
+   377→                Démarrer l'essai
+   378→                <ArrowRight className="h-4 w-4" />
+   379→              </Button>
+   380→            </div>
+   381→          </SheetContent>
+   382→        </Sheet>
+   383→      </div>
+   384→    </header>
+   385→  );
+   386→}
+   387→
+   388→// ============================================================
+   389→// Hero
+   390→// ============================================================
+   391→function Hero({ onEnter }: { onEnter: () => void }) {
+   392→  return (
+   393→    <section
+   394→      id="top"
+   395→      className="relative overflow-hidden medical-grid"
+   396→    >
+   397→      {/* Halos */}
+   398→      <div className="pointer-events-none absolute -top-32 right-0 h-96 w-96 rounded-full glow-teal blur-3xl" />
+   399→      <div className="pointer-events-none absolute -bottom-40 -left-32 h-96 w-96 rounded-full glow-teal blur-3xl opacity-60" />
+   400→
+   401→      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8 lg:py-28">
+   402→        <div className="grid items-center gap-12 lg:grid-cols-2">
+   403→          {/* Colonne texte */}
+   404→          <motion.div
+   405→            variants={stagger}
+   406→            initial="hidden"
+   407→            animate="visible"
+   408→            className="flex flex-col gap-6"
+   409→          >
+   410→            <motion.div variants={fadeUp}>
+   411→              <Badge
+   412→                variant="outline"
+   413→                className="w-fit gap-1.5 border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-900 dark:bg-teal-950/40 dark:text-teal-300"
+   414→              >
+   415→                <Sparkles className="h-3.5 w-3.5" />
+   416→                Conçu en Côte d'Ivoire, pour la Côte d'Ivoire
+   417→              </Badge>
+   418→            </motion.div>
+   419→
+   420→            <motion.h1
+   421→              variants={fadeUp}
+   422→              className="text-4xl font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl"
+   423→            >
+   424→              La gestion médicale,{" "}
+   425→              <span className="bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent">
+   426→                pensée pour la Côte d'Ivoire
+   427→              </span>
+   428→            </motion.h1>
+   429→
+   430→            <motion.p
+   431→              variants={fadeUp}
+   432→              className="max-w-xl text-lg text-muted-foreground text-pretty"
+   433→            >
+   434→              RDV en ligne, dossiers patients numériques, ordonnances
+   435→              électroniques, paiement Mobile Money et téléconsultation —
+   436→              réunis dans une seule plateforme, hébergée en Afrique et
+   437→              conforme à la loi ivoirienne.
+   438→            </motion.p>
+   439→
+   440→            <motion.div
+   441→              variants={fadeUp}
+   442→              className="flex flex-col gap-3 sm:flex-row"
+   443→            >
+   444→              <Button
+   445→                size="lg"
+   446→                onClick={onEnter}
+   447→                className="h-12 bg-teal-600 text-base hover:bg-teal-700"
+   448→              >
+   449→                <Stethoscope className="h-5 w-5" />
+   450→                Accéder à la plateforme
+   451→              </Button>
+   452→              <Button
+   453→                size="lg"
+   454→                variant="outline"
+   455→                asChild
+   456→                className="h-12 text-base"
+   457→              >
+   458→                <a href="#tarifs">Voir les tarifs</a>
+   459→              </Button>
+   460→            </motion.div>
+   461→
+   462→            <motion.div
+   463→              variants={fadeUp}
+   464→              className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-xs font-medium text-muted-foreground"
+   465→            >
+   466→              <span className="inline-flex items-center gap-1.5">
+   467→                <ShieldCheck className="h-4 w-4 text-teal-600" />
+   468→                Conforme Loi n°2013-450
+   469→              </span>
+   470→              <span className="inline-flex items-center gap-1.5">
+   471→                <Server className="h-4 w-4 text-emerald-600" />
+   472→                Hébergé en af-south-1
+   473→              </span>
+   474→              <span className="inline-flex items-center gap-1.5">
+   475→                <Smartphone className="h-4 w-4 text-orange-500" />
+   476→                Mobile Money natif
+   477→              </span>
+   478→            </motion.div>
+   479→          </motion.div>
+   480→
+   481→          {/* Colonne visuel */}
+   482→          <motion.div
+   483→            initial={{ opacity: 0, y: 30 }}
+   484→            animate={{ opacity: 1, y: 0 }}
+   485→            transition={{ duration: 0.7, delay: 0.2 }}
+   486→            className="relative"
+   487→          >
+   488→            <HeroDashboardPreview />
+   489→          </motion.div>
+   490→        </div>
+   491→      </div>
+   492→    </section>
+   493→  );
+   494→}
+   495→
+   496→// Mini aperçu dashboard (glassmorphism)
+   497→function HeroDashboardPreview() {
+   498→  return (
+   499→    <div className="relative">
+   500→      {/* Carte principale */}
+   501→      <div className="relative rounded-2xl border border-teal-100 bg-white/80 p-5 shadow-2xl shadow-teal-500/10 backdrop-blur-xl dark:border-teal-900/50 dark:bg-card/80">
+   502→        <div className="flex items-center justify-between border-b border-border/60 pb-3">
+   503→          <div className="flex items-center gap-2">
+   504→            <BrandMark size="sm" />
+   505→            <div>
+   506→              <p className="text-sm font-semibold">Clinique du Plateau</p>
+   507→              <p className="text-[11px] text-muted-foreground">
+   508→                Cocody — Abidjan
+   509→              </p>
+   510→            </div>
+   511→          </div>
+   512→          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+   513→            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+   514→            En ligne
+   515→          </Badge>
+   516→        </div>
+   517→
+   518→        {/* KPIs */}
+   519→        <div className="grid grid-cols-3 gap-3 py-4">
+   520→          <MiniStat
+   521→            icon={CalendarDays}
+   522→            label="RDV ce mois"
+   523→            value="512"
+   524→            trend="+12%"
+   525→            color="text-teal-600"
+   526→          />
+   527→          <MiniStat
+   528→            icon={Wallet}
+   529→            label="Revenus"
+   530→            value="4,8M"
+   531→            trend="FCFA"
+   532→            color="text-orange-500"
+   533→          />
+   534→          <MiniStat
+   535→            icon={Users}
+   536→            label="Patients actifs"
+   537→            value="1 240"
+   538→            trend="+8%"
+   539→            color="text-emerald-600"
+   540→          />
+   541→        </div>
+   542→
+   543→        {/* Mini bar chart */}
+   544→        <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+   545→          <div className="mb-2 flex items-center justify-between">
+   546→            <span className="text-xs font-medium text-muted-foreground">
+   547→              Activité 7 derniers jours
+   548→            </span>
+   549→            <Activity className="h-3.5 w-3.5 text-teal-600" />
+   550→          </div>
+   551→          <div className="flex h-16 items-end justify-between gap-1.5">
+   552→            {[55, 70, 45, 80, 65, 90, 75].map((h, i) => (
+   553→              <div
+   554→                key={i}
+   555→                className="flex-1 rounded-t bg-gradient-to-t from-teal-500 to-emerald-400"
+   556→                style={{ height: `${h}%` }}
+   557→              />
+   558→            ))}
+   559→          </div>
+   560→        </div>
+   561→
+   562→        {/* Mini liste RDV */}
+   563→        <div className="mt-3 space-y-2">
+   564→          <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 p-2">
+   565→            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-700 dark:bg-teal-950/50 dark:text-teal-300">
+   566→              AK
+   567→            </div>
+   568→            <div className="flex-1 min-w-0">
+   569→              <p className="truncate text-xs font-medium">
+   570→                Dr. Aya Kouassi · Médecine générale
+   571→              </p>
+   572→              <p className="text-[11px] text-muted-foreground">
+   573→                09:30 — Aya Kouassi
+   574→              </p>
+   575→            </div>
+   576→            <Badge
+   577→              variant="secondary"
+   578→              className="bg-teal-100 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300"
+   579→            >
+   580→              Confirmé
+   581→            </Badge>
+   582→          </div>
+   583→          <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-background/60 p-2">
+   584→            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-700 dark:bg-orange-950/50 dark:text-orange-300">
+   585→              OM
+   586→            </div>
+   587→            <div className="flex-1 min-w-0">
+   588→              <p className="truncate text-xs font-medium">
+   589→                Paiement Orange Money
+   590→              </p>
+   591→              <p className="text-[11px] text-muted-foreground">
+   592→                Reçu il y a 3 min
+   593→              </p>
+   594→            </div>
+   595→            <span className="text-xs font-semibold text-emerald-600">
+   596→              +25 000 F
+   597→            </span>
+   598→          </div>
+   599→        </div>
+   600→      </div>
+   601→
+   602→      {/* Notification flottante */}
+   603→      <motion.div
+   604→        initial={{ opacity: 0, scale: 0.9 }}
+   605→        animate={{ opacity: 1, scale: 1 }}
+   606→        transition={{ delay: 0.8, duration: 0.5 }}
+   607→        className="absolute -right-4 -top-4 hidden items-center gap-2 rounded-xl border border-orange-200 bg-white/95 p-3 shadow-xl backdrop-blur sm:flex dark:border-orange-900/50 dark:bg-card/95"
+   608→      >
+   609→        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-950/50">
+   610→          <Bell className="h-4 w-4 text-orange-600" />
+   611→        </div>
+   612→        <div>
+   613→          <p className="text-xs font-semibold">RDV rappel envoyé</p>
+   614→          <p className="text-[11px] text-muted-foreground">via WhatsApp</p>
+   615→        </div>
+   616→      </motion.div>
+   617→
+   618→      {/* Pastille Mobile Money */}
+   619→      <motion.div
+   620→        initial={{ opacity: 0, scale: 0.9 }}
+   621→        animate={{ opacity: 1, scale: 1 }}
+   622→        transition={{ delay: 1, duration: 0.5 }}
+   623→        className="absolute -bottom-4 -left-4 hidden items-center gap-2 rounded-xl border border-emerald-200 bg-white/95 p-3 shadow-xl backdrop-blur sm:flex dark:border-emerald-900/50 dark:bg-card/95"
+   624→      >
+   625→        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/50">
+   626→          <Smartphone className="h-4 w-4 text-emerald-600" />
+   627→        </div>
+   628→        <div>
+   629→          <p className="text-xs font-semibold">Wave · MTN · Orange</p>
+   630→          <p className="text-[11px] text-muted-foreground">CinetPay actif</p>
+   631→        </div>
+   632→      </motion.div>
+   633→    </div>
+   634→  );
+   635→}
+   636→
+   637→function MiniStat({
+   638→  icon: Icon,
+   639→  label,
+   640→  value,
+   641→  trend,
+   642→  color,
+   643→}: {
+   644→  icon: React.ComponentType<{ className?: string }>;
+   645→  label: string;
+   646→  value: string;
+   647→  trend: string;
+   648→  color: string;
+   649→}) {
+   650→  return (
+   651→    <div className="rounded-lg border border-border/60 bg-muted/30 p-2.5">
+   652→      <div className="flex items-center justify-between">
+   653→        <Icon className={cn("h-3.5 w-3.5", color)} />
+   654→        <span className="text-[10px] font-medium text-muted-foreground">
+   655→          {trend}
+   656→        </span>
+   657→      </div>
+   658→      <p className="mt-1 text-lg font-bold tracking-tight">{value}</p>
+   659→      <p className="text-[10px] text-muted-foreground">{label}</p>
+   660→    </div>
+   661→  );
+   662→}
+   663→
+   664→// ============================================================
+   665→// Bandeau partenaires
+   666→// ============================================================
+   667→function Partners() {
+   668→  return (
+   669→    <section className="border-y border-border/60 bg-muted/40">
+   670→      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+   671→        <p className="mb-5 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+   672→          Intégrations natives pour les praticiens ivoiriens
+   673→        </p>
+   674→        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+   675→          {PARTNERS.map((p) => (
+   676→            <span
+   677→              key={p.name}
+   678→              className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80"
+   679→            >
+   680→              <span className={cn("h-2 w-2 rounded-full", p.color)} />
+   681→              {p.name}
+   682→            </span>
+   683→          ))}
+   684→        </div>
+   685→      </div>
+   686→    </section>
+   687→  );
+   688→}
+   689→
+   690→// ============================================================
+   691→// Modules (10 cartes)
+   692→// ============================================================
+   693→function Modules() {
+   694→  return (
+   695→    <section id="modules" className="py-20 sm:py-24">
+   696→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   697→        <SectionHeading
+   698→          eyebrow="Modules"
+   699→          title="Tout votre cabinet, dans une seule plateforme"
+   700→          description="10 modules intégrés qui couvrent l'intégralité du parcours de soins — de la prise de rendez-vous au paiement Mobile Money."
+   701→        />
+   702→
+   703→        <motion.div
+   704→          variants={stagger}
+   705→          initial="hidden"
+   706→          whileInView="visible"
+   707→          viewport={{ once: true, margin: "-100px" }}
+   708→          className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+   709→        >
+   710→          {MODULES.map((m, i) => (
+   711→            <motion.div
+   712→              key={m.title}
+   713→              variants={fadeUp}
+   714→              custom={i}
+   715→              className="group relative rounded-2xl border border-border/60 bg-card p-5 shadow-sm transition-all hover:-translate-y-1 hover:border-teal-300 hover:shadow-lg hover:shadow-teal-500/10 dark:hover:border-teal-800"
+   716→            >
+   717→              <div
+   718→                className={cn(
+   719→                  "mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br text-white shadow-md",
+   720→                  m.color
+   721→                )}
+   722→              >
+   723→                <m.icon className="h-5 w-5" />
+   724→              </div>
+   725→              <h3 className="text-base font-semibold tracking-tight">
+   726→                {m.title}
+   727→              </h3>
+   728→              <p className="mt-1.5 text-sm text-muted-foreground">{m.desc}</p>
+   729→            </motion.div>
+   730→          ))}
+   731→        </motion.div>
+   732→      </div>
+   733→    </section>
+   734→  );
+   735→}
+   736→
+   737→// ============================================================
+   738→// Pourquoi MediSaaS CI
+   739→// ============================================================
+   740→function WhyUs() {
+   741→  return (
+   742→    <section id="pourquoi" className="bg-muted/40 py-20 sm:py-24">
+   743→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   744→        <SectionHeading
+   745→          eyebrow="Pourquoi MediSaaS CI"
+   746→          title="Pensé pour les contraintes réelles des cliniques ivoiriennes"
+   747→          description="Hébergement africain, conformité légale, paiements locaux et communication patient adaptée au contexte d'Abidjan."
+   748→        />
+   749→
+   750→        <motion.div
+   751→          variants={stagger}
+   752→          initial="hidden"
+   753→          whileInView="visible"
+   754→          viewport={{ once: true, margin: "-80px" }}
+   755→          className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+   756→        >
+   757→          {REASONS.map((r, i) => (
+   758→            <motion.div
+   759→              key={r.title}
+   760→              variants={fadeUp}
+   761→              custom={i}
+   762→              className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-colors hover:border-teal-300 dark:hover:border-teal-800"
+   763→            >
+   764→              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-600 dark:bg-teal-950/40 dark:text-teal-300">
+   765→                <r.icon className="h-6 w-6" />
+   766→              </div>
+   767→              <h3 className="text-lg font-semibold tracking-tight">{r.title}</h3>
+   768→              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   769→                {r.desc}
+   770→              </p>
+   771→            </motion.div>
+   772→          ))}
+   773→        </motion.div>
+   774→      </div>
+   775→    </section>
+   776→  );
+   777→}
+   778→
+   779→// ============================================================
+   780→// Comment ça marche
+   781→// ============================================================
+   782→function HowItWorks() {
+   783→  return (
+   784→    <section id="etapes" className="py-20 sm:py-24">
+   785→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   786→        <SectionHeading
+   787→          eyebrow="Comment ça marche"
+   788→          title="Opérationnel en moins de 48 heures"
+   789→          description="Un parcours d'adoption simple, de l'onboarding du cabinet au premier paiement Mobile Money."
+   790→        />
+   791→
+   792→        <motion.div
+   793→          variants={stagger}
+   794→          initial="hidden"
+   795→          whileInView="visible"
+   796→          viewport={{ once: true, margin: "-80px" }}
+   797→          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+   798→        >
+   799→          {STEPS.map((s, i) => (
+   800→            <motion.div
+   801→              key={s.title}
+   802→              variants={fadeUp}
+   803→              custom={i}
+   804→              className="relative rounded-2xl border border-border/60 bg-card p-6"
+   805→            >
+   806→              <div className="absolute right-5 top-5 text-5xl font-extrabold text-teal-100 dark:text-teal-950/60">
+   807→                {String(i + 1).padStart(2, "0")}
+   808→              </div>
+   809→              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20">
+   810→                <s.icon className="h-6 w-6" />
+   811→              </div>
+   812→              <h3 className="text-lg font-semibold tracking-tight">{s.title}</h3>
+   813→              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+   814→                {s.desc}
+   815→              </p>
+   816→            </motion.div>
+   817→          ))}
+   818→        </motion.div>
+   819→      </div>
+   820→    </section>
+   821→  );
+   822→}
+   823→
+   824→// ============================================================
+   825→// Témoignages
+   826→// ============================================================
+   827→function Testimonials() {
+   828→  return (
+   829→    <section className="bg-muted/40 py-20 sm:py-24">
+   830→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   831→        <SectionHeading
+   832→          eyebrow="Témoignages"
+   833→          title="La parole aux praticiens ivoiriens"
+   834→          description="Médecins, cardiologues et secrétaires médicales d'Abidjan nous font confiance au quotidien."
+   835→        />
+   836→
+   837→        <motion.div
+   838→          variants={stagger}
+   839→          initial="hidden"
+   840→          whileInView="visible"
+   841→          viewport={{ once: true, margin: "-80px" }}
+   842→          className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3"
+   843→        >
+   844→          {TESTIMONIALS.map((t, i) => (
+   845→            <motion.figure
+   846→              key={t.name}
+   847→              variants={fadeUp}
+   848→              custom={i}
+   849→              className="flex flex-col rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+   850→            >
+   851→              <div className="mb-4 flex gap-0.5">
+   852→                {Array.from({ length: t.rating }).map((_, idx) => (
+   853→                  <Star
+   854→                    key={idx}
+   855→                    className="h-4 w-4 fill-orange-400 text-orange-400"
+   856→                  />
+   857→                ))}
+   858→              </div>
+   859→              <blockquote className="flex-1 text-sm leading-relaxed text-foreground/90">
+   860→                « {t.quote} »
+   861→              </blockquote>
+   862→              <figcaption className="mt-5 flex items-center gap-3 border-t border-border/60 pt-4">
+   863→                <div
+   864→                  className={cn(
+   865→                    "flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white",
+   866→                    t.color
+   867→                  )}
+   868→                >
+   869→                  {t.initials}
+   870→                </div>
+   871→                <div>
+   872→                  <p className="text-sm font-semibold">{t.name}</p>
+   873→                  <p className="text-xs text-muted-foreground">{t.role}</p>
+   874→                </div>
+   875→              </figcaption>
+   876→            </motion.figure>
+   877→          ))}
+   878→        </motion.div>
+   879→      </div>
+   880→    </section>
+   881→  );
+   882→}
+   883→
+   884→// ============================================================
+   885→// Tarifs
+   886→// ============================================================
+   887→function Pricing({
+   888→  annual,
+   889→  setAnnual,
+   890→  onEnter,
+   891→}: {
+   892→  annual: boolean;
+   893→  setAnnual: (v: boolean) => void;
+   894→  onEnter: () => void;
+   895→}) {
+   896→  return (
+   897→    <section id="tarifs" className="py-20 sm:py-24">
+   898→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+   899→        <SectionHeading
+   900→          eyebrow="Tarifs"
+   901→          title="Des tarifs transparents, en FCFA"
+   902→          description="Choisissez le plan adapté à votre cabinet. Sans engagement, annulable à tout moment. Paiement Mobile Money accepté."
+   903→        />
+   904→
+   905→        {/* Bascule mensuel / annuel */}
+   906→        <div className="mt-8 flex items-center justify-center gap-3">
+   907→          <span
+   908→            className={cn(
+   909→              "text-sm font-medium transition-colors",
+   910→              !annual ? "text-foreground" : "text-muted-foreground"
+   911→            )}
+   912→          >
+   913→            Mensuel
+   914→          </span>
+   915→          <button
+   916→            type="button"
+   917→            onClick={() => setAnnual(!annual)}
+   918→            className="relative h-7 w-12 rounded-full border border-border bg-muted transition-colors data-[on=true]:bg-teal-600"
+   919→            data-on={annual}
+   920→            aria-label="Basculer entre mensuel et annuel"
+   921→          >
+   922→            <span
+   923→              className={cn(
+   924→                "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all",
+   925→                annual ? "left-6" : "left-0.5"
+   926→              )}
+   927→            />
+   928→          </button>
+   929→          <span
+   930→            className={cn(
+   931→              "text-sm font-medium transition-colors",
+   932→              annual ? "text-foreground" : "text-muted-foreground"
+   933→            )}
+   934→          >
+   935→            Annuel
+   936→          </span>
+   937→          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+   938→            -20%
+   939→          </Badge>
+   940→        </div>
+   941→
+   942→        <motion.div
+   943→          variants={stagger}
+   944→          initial="hidden"
+   945→          whileInView="visible"
+   946→          viewport={{ once: true, margin: "-80px" }}
+   947→          className="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3"
+   948→        >
+   949→          {PLANS.map((plan, i) => {
+   950→            const monthlyPrice = annual
+   951→              ? Math.round(plan.price * 0.8)
+   952→              : plan.price;
+   953→            const isPopular = plan.popular;
+   954→            return (
+   955→              <motion.div
+   956→                key={plan.id}
+   957→                variants={fadeUp}
+   958→                custom={i}
+   959→                className={cn(
+   960→                  "relative flex flex-col rounded-2xl border bg-card p-6 shadow-sm transition-all",
+   961→                  isPopular
+   962→                    ? "border-teal-500 shadow-xl shadow-teal-500/10 lg:-translate-y-3 lg:scale-[1.03]"
+   963→                    : "border-border/60 hover:border-teal-300 dark:hover:border-teal-800"
+   964→                )}
+   965→              >
+   966→                {isPopular && (
+   967→                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+   968→                    <Badge className="bg-teal-600 px-3 py-1 text-white shadow-md">
+   969→                      <Sparkles className="h-3 w-3" />
+   970→                      Le plus populaire
+   971→                    </Badge>
+   972→                  </div>
+   973→                )}
+   974→
+   975→                <div className="mb-4">
+   976→                  <h3 className="text-xl font-bold tracking-tight">
+   977→                    {plan.name}
+   978→                  </h3>
+   979→                  <p className="mt-1 text-sm text-muted-foreground">
+   980→                    {plan.tagline}
+   981→                  </p>
+   982→                </div>
+   983→
+   984→                <div className="mb-6 flex items-baseline gap-1">
+   985→                  <span className="text-4xl font-extrabold tracking-tight">
+   986→                    {formatFCFA(monthlyPrice)}
+   987→                  </span>
+   988→                  <span className="text-sm text-muted-foreground">/mois</span>
+   989→                </div>
+   990→
+   991→                <Button
+   992→                  onClick={onEnter}
+   993→                  variant={isPopular ? "default" : "outline"}
+   994→                  className={
+   995→                    isPopular
+   996→                      ? "w-full bg-teal-600 hover:bg-teal-700"
+   997→                      : "w-full"
+   998→                  }
+   999→                >
+  1000→                  Choisir {plan.name}
+  1001→                  <ArrowRight className="h-4 w-4" />
+  1002→                </Button>
+  1003→
+  1004→                <ul className="mt-6 space-y-3 border-t border-border/60 pt-6">
+  1005→                  {plan.features.map((f, idx) => (
+  1006→                    <li key={idx} className="flex items-start gap-2.5 text-sm">
+  1007→                      <Check
+  1008→                        className={cn(
+  1009→                          "mt-0.5 h-4 w-4 shrink-0",
+  1010→                          isPopular ? "text-teal-600" : "text-emerald-600"
+  1011→                        )}
+  1012→                      />
+  1013→                      <span className="text-foreground/90">{f}</span>
+  1014→                    </li>
+  1015→                  ))}
+  1016→                </ul>
+  1017→              </motion.div>
+  1018→            );
+  1019→          })}
+  1020→        </motion.div>
+  1021→
+  1022→        <p className="mt-8 text-center text-sm text-muted-foreground">
+  1023→          Tous les plans incluent l'hébergement africain, la conformité Loi
+  1024→          2013-450 et le support en français.
+  1025→        </p>
+  1026→      </div>
+  1027→    </section>
+  1028→  );
+  1029→}
+  1030→
+  1031→// ============================================================
+  1032→// Conformité & sécurité
+  1033→// ============================================================
+  1034→function Compliance() {
+  1035→  return (
+  1036→    <section id="conformite" className="bg-muted/40 py-20 sm:py-24">
+  1037→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  1038→        <SectionHeading
+  1039→          eyebrow="Conformité & sécurité"
+  1040→          title="Vos données restent en Afrique, protégées par la loi ivoirienne"
+  1041→          description="MediSaaS CI applique les exigences de la Loi n°2013-450 et les standards internationaux de sécurité."
+  1042→        />
+  1043→
+  1044→        <motion.div
+  1045→          variants={stagger}
+  1046→          initial="hidden"
+  1047→          whileInView="visible"
+  1048→          viewport={{ once: true, margin: "-80px" }}
+  1049→          className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+  1050→        >
+  1051→          {COMPLIANCE.map((c, i) => (
+  1052→            <motion.div
+  1053→              key={c.title}
+  1054→              variants={fadeUp}
+  1055→              custom={i}
+  1056→              className="rounded-2xl border border-border/60 bg-card p-6 text-center"
+  1057→            >
+  1058→              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/20">
+  1059→                <c.icon className="h-7 w-7" />
+  1060→              </div>
+  1061→              <h3 className="text-base font-semibold tracking-tight">
+  1062→                {c.title}
+  1063→              </h3>
+  1064→              <p className="mt-2 text-sm text-muted-foreground">{c.desc}</p>
+  1065→            </motion.div>
+  1066→          ))}
+  1067→        </motion.div>
+  1068→      </div>
+  1069→    </section>
+  1070→  );
+  1071→}
+  1072→
+  1073→// ============================================================
+  1074→// CTA final
+  1075→// ============================================================
+  1076→function FinalCTA({ onEnter }: { onEnter: () => void }) {
+  1077→  return (
+  1078→    <section className="py-20 sm:py-24">
+  1079→      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  1080→        <motion.div
+  1081→          initial={{ opacity: 0, y: 30 }}
+  1082→          whileInView={{ opacity: 1, y: 0 }}
+  1083→          viewport={{ once: true, margin: "-80px" }}
+  1084→          transition={{ duration: 0.6 }}
+  1085→          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal-600 via-emerald-600 to-emerald-700 px-6 py-16 text-center shadow-2xl shadow-teal-500/30 sm:px-12 sm:py-20"
+  1086→        >
+  1087→          {/* Décor */}
+  1088→          <div className="pointer-events-none absolute inset-0 medical-grid opacity-20" />
+  1089→          <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-orange-400/30 blur-3xl" />
+  1090→          <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-teal-300/30 blur-3xl" />
+  1091→
+  1092→          <div className="relative">
+  1093→            <h2 className="mx-auto max-w-3xl text-3xl font-extrabold tracking-tight text-white text-balance sm:text-4xl lg:text-5xl">
+  1094→              Prêt à digitaliser votre cabinet médical ?
+  1095→            </h2>
+  1096→            <p className="mx-auto mt-4 max-w-2xl text-base text-teal-50 sm:text-lg">
+  1097→              Rejoignez les cliniques d'Abidjan, Cocody, Yopougon et de toute
+  1098→              la Côte d'Ivoire qui ont choisi la gestion moderne. Essai
+  1099→              gratuit, sans carte bancaire.
+  1100→            </p>
+  1101→            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+  1102→              <Button
+  1103→                size="lg"
+  1104→                onClick={onEnter}
+  1105→                className="h-12 bg-white text-base text-teal-700 shadow-lg hover:bg-teal-50"
+  1106→              >
+  1107→                <Rocket className="h-5 w-5" />
+  1108→                Démarrer gratuitement
+  1109→              </Button>
+  1110→              <Button
+  1111→                size="lg"
+  1112→                variant="outline"
+  1113→                asChild
+  1114→                className="h-12 border-white/40 bg-white/10 text-base text-white backdrop-blur hover:bg-white/20 hover:text-white"
+  1115→              >
+  1116→                <a href="#contact">
+  1117→                  Contacter l'équipe
+  1118→                  <ArrowUpRight className="h-5 w-5" />
+  1119→                </a>
+  1120→              </Button>
+  1121→            </div>
+  1122→          </div>
+  1123→        </motion.div>
+  1124→      </div>
+  1125→    </section>
+  1126→  );
+  1127→}
+  1128→
+  1129→// ============================================================
+  1130→// Footer sticky
+  1131→// ============================================================
+  1132→function Footer() {
+  1133→  const year = new Date().getFullYear();
+  1134→  const cols = [
+  1135→    {
+  1136→      title: "Produit",
+  1137→      links: [
+  1138→        { label: "Modules", href: "#modules" },
+  1139→        { label: "Tarifs", href: "#tarifs" },
+  1140→        { label: "Téléconsultation", href: "#modules" },
+  1141→        { label: "Mobile Money", href: "#modules" },
+  1142→        { label: "Portail patient", href: "#modules" },
+  1143→      ],
+  1144→    },
+  1145→    {
+  1146→      title: "Ressources",
+  1147→      links: [
+  1148→        { label: "Documentation", href: "#" },
+  1149→        { label: "Guide d'onboarding", href: "#etapes" },
+  1150→        { label: "API & intégrations", href: "#" },
+  1151→        { label: "Statut plateforme", href: "#" },
+  1152→        { label: "Blog médical", href: "#" },
+  1153→      ],
+  1154→    },
+  1155→    {
+  1156→      title: "Entreprise",
+  1157→      links: [
+  1158→        { label: "À propos", href: "#" },
+  1159→        { label: "Nos clients", href: "#" },
+  1160→        { label: "Carrières", href: "#" },
+  1161→        { label: "Partenaires", href: "#" },
+  1162→        { label: "Presse", href: "#" },
+  1163→      ],
+  1164→    },
+  1165→    {
+  1166→      title: "Légal",
+  1167→      links: [
+  1168→        { label: "Conformité Loi 2013-450", href: "#conformite" },
+  1169→        { label: "Politique de confidentialité", href: "#" },
+  1170→        { label: "Conditions générales", href: "#" },
+  1171→        { label: "Mentions légales", href: "#" },
+  1172→        { label: "RGPD & ARTCI", href: "#conformite" },
+  1173→      ],
+  1174→    },
+  1175→  ];
+  1176→
+  1177→  return (
+  1178→    <footer
+  1179→      id="contact"
+  1180→      className="mt-auto border-t border-border/60 bg-muted/40"
+  1181→    >
+  1182→      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+  1183→        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-6">
+  1184→          {/* Brand + contact */}
+  1185→          <div className="col-span-2">
+  1186→            <Brand size="md" />
+  1187→            <p className="mt-4 max-w-xs text-sm text-muted-foreground">
+  1188→              La plateforme SaaS de gestion médicale conçue en Côte d'Ivoire,
+  1189→              pour les cabinets et cliniques d'Abidjan et de toute l'Afrique
+  1190→              de l'Ouest.
+  1191→            </p>
+  1192→            <div className="mt-5 space-y-2 text-sm">
+  1193→              <a
+  1194→                href={`tel:${TENANT.phone}`}
+  1195→                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+  1196→              >
+  1197→                <Phone className="h-4 w-4 text-teal-600" />
+  1198→                {TENANT.phone}
+  1199→              </a>
+  1200→              <a
+  1201→                href={`mailto:${TENANT.email}`}
+  1202→                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+  1203→              >
+  1204→                <Mail className="h-4 w-4 text-teal-600" />
+  1205→                {TENANT.email}
+  1206→              </a>
+  1207→              <p className="flex items-center gap-2 text-muted-foreground">
+  1208→                <MapPin className="h-4 w-4 text-teal-600" />
+  1209→                {TENANT.address}
+  1210→              </p>
+  1211→            </div>
+  1212→          </div>
+  1213→
+  1214→          {/* Colonnes de liens */}
+  1215→          {cols.map((col) => (
+  1216→            <div key={col.title}>
+  1217→              <h4 className="text-sm font-semibold tracking-tight">
+  1218→                {col.title}
+  1219→              </h4>
+  1220→              <ul className="mt-4 space-y-2.5">
+  1221→                {col.links.map((l) => (
+  1222→                  <li key={l.label}>
+  1223→                    <a
+  1224→                      href={l.href}
+  1225→                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+  1226→                    >
+  1227→                      {l.label}
+  1228→                    </a>
+  1229→                  </li>
+  1230→                ))}
+  1231→              </ul>
+  1232→            </div>
+  1233→          ))}
+  1234→        </div>
+  1235→
+  1236→        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border/60 pt-6 sm:flex-row sm:items-center">
+  1237→          <p className="text-xs text-muted-foreground">
+  1238→            © {year} MediSaaS CI — Conforme à la Loi ivoirienne n°2013-450.
+  1239→            Tous droits réservés.
+  1240→          </p>
+  1241→          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+  1242→            <span className="inline-flex items-center gap-1.5">
+  1243→              <Globe2 className="h-3.5 w-3.5 text-teal-600" />
+  1244→              Hébergé en af-south-1
+  1245→            </span>
+  1246→            <span className="inline-flex items-center gap-1.5">
+  1247→              <Server className="h-3.5 w-3.5 text-emerald-600" />
+  1248→              Backups quotidiens
+  1249→            </span>
+  1250→            <span className="inline-flex items-center gap-1.5">
+  1251→              <Lock className="h-3.5 w-3.5 text-orange-500" />
+  1252→              Chiffrement AES-256
+  1253→            </span>
+  1254→          </div>
+  1255→        </div>
+  1256→      </div>
+  1257→    </footer>
+  1258→  );
+  1259→}
+  1260→
+  1261→// ============================================================
+  1262→// Heading de section réutilisable
+  1263→// ============================================================
+  1264→function SectionHeading({
+  1265→  eyebrow,
+  1266→  title,
+  1267→  description,
+  1268→}: {
+  1269→  eyebrow: string;
+  1270→  title: string;
+  1271→  description: string;
+  1272→}) {
+  1273→  return (
+  1274→    <motion.div
+  1275→      initial={{ opacity: 0, y: 20 }}
+  1276→      whileInView={{ opacity: 1, y: 0 }}
+  1277→      viewport={{ once: true, margin: "-80px" }}
+  1278→      transition={{ duration: 0.5 }}
+  1279→      className="mx-auto max-w-3xl text-center"
+  1280→    >
+  1281→      <span className="inline-block rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+  1282→        {eyebrow}
+  1283→      </span>
+  1284→      <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">
+  1285→        {title}
+  1286→      </h2>
+  1287→      <p className="mt-4 text-base text-muted-foreground text-pretty sm:text-lg">
+  1288→        {description}
+  1289→      </p>
+  1290→    </motion.div>
+  1291→  );
+  1292→}
+  1293→

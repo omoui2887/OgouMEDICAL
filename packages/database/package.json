@@ -1,0 +1,14 @@
+{
+  "name": "@medisaas/database",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Schéma Prisma + migrations + seed — MediSaaS CI",
+  "main": "./index.ts",
+  "scripts": {
+    "db:push": "prisma db push --schema=./schema.prisma",
+    "db:generate": "prisma generate --schema=./schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=./schema.prisma",
+    "db:seed": "bun run seed/index.ts",
+    "lint": "eslint ."
+  }
+}

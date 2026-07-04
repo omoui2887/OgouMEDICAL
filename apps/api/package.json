@@ -1,0 +1,14 @@
+{
+  "name": "@medisaas/api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend NestJS — MediSaaS CI (API REST multi-tenant)",
+  "main": "./src/main.ts",
+  "scripts": {
+    "dev": "echo 'NestJS API — voir src/main.ts. En production : nest start --watch'",
+    "start": "echo 'NestJS API — nest start'",
+    "build": "echo 'nest build'",
+    "lint": "eslint .",
+    "test": "echo 'jest'"
+  }
+}

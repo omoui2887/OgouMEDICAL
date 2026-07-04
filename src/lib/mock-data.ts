@@ -168,7 +168,7 @@ export const APPOINTMENTS: Appointment[] = Array.from({ length: 40 }).map((_, i)
     time: `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
     duration: 30,
     reason: pick(REASONS, i),
-    type: i % 6 === 0 ? "teleconsultation" : "presentiel",
+    type: i % 7 === 0 ? "teleconsultation" : i % 5 === 0 ? "suivi" : i % 11 === 0 ? "urgence" : "consultation",
     status,
     commune: patient.commune,
   };

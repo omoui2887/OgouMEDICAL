@@ -30,7 +30,30 @@ export type AppointmentStatus =
   | "annule"
   | "absent";
 
-export type AppointmentType = "presentiel" | "teleconsultation";
+export type AppointmentType =
+  | "consultation"
+  | "suivi"
+  | "teleconsultation"
+  | "urgence"
+  | "visite_domicile";
+
+export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
+  consultation: "Consultation",
+  suivi: "Suivi",
+  teleconsultation: "Téléconsultation",
+  urgence: "Urgence",
+  visite_domicile: "Visite à domicile",
+};
+
+// Codes couleur par statut (palette médicale)
+export const APPOINTMENT_STATUS_COLORS: Record<AppointmentStatus, { bg: string; text: string; border: string; hex: string }> = {
+  planifie: { bg: "bg-sky-100", text: "text-sky-700", border: "border-sky-300", hex: "#0EA5E9" },
+  confirme: { bg: "bg-emerald-100", text: "text-emerald-700", border: "border-emerald-300", hex: "#10B981" },
+  en_cours: { bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-300", hex: "#F59E0B" },
+  termine: { bg: "bg-zinc-100", text: "text-zinc-600", border: "border-zinc-300", hex: "#6B7280" },
+  annule: { bg: "bg-rose-100", text: "text-rose-700", border: "border-rose-300", hex: "#EF4444" },
+  absent: { bg: "bg-violet-100", text: "text-violet-700", border: "border-violet-300", hex: "#8B5CF6" },
+};
 
 export type InvoiceStatus = "impayee" | "payee" | "partielle" | "annulee";
 

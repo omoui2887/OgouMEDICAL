@@ -1,0 +1,15 @@
+node_modules
+.next
+dist
+build
+coverage
+.turbo
+dev.log
+server.log
+bun.lock
+package-lock.json
+pnpm-lock.yaml
+prisma/migrations
+supabase/migrations
+*.min.js
+*.min.css

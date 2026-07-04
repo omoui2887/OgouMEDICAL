@@ -1,0 +1,12 @@
+{
+  "name": "@medisaas/shared-types",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Types TypeScript partagés front/back — MediSaaS CI",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  }
+}

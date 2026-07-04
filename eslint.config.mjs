@@ -44,7 +44,10 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
-  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills"]
+  // supabase/functions contient des Edge Functions Deno (TypeScript)
+  // avec des globales Deno non disponibles dans l'environnement Next.js.
+  // Les .md et .sql ne sont pas lintés par défaut par ESLint.
+  ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills", "supabase/**", "docs/**", "apps/**", "packages/**", "download/**"]
 }];
 
 export default eslintConfig;

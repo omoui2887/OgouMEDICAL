@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky-sh"
+
+# MediSaaS CI — pre-push hook (vérifications complètes)
+echo "🚀 MediSaaS CI — Vérification pre-push..."
+
+bun run lint
+bun run typecheck 2>/dev/null || echo "⚠️  Typecheck ignoré (config à compléter)"

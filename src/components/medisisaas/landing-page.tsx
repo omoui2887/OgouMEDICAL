@@ -257,10 +257,14 @@ const COMPLIANCE = [
 // ============================================================
 export function LandingPage() {
   const enterDashboard = useAppStore((s) => s.enterDashboard);
+  const showAuth = useAppStore((s) => s.showAuth);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [annual, setAnnual] = useState(false);
 
   const handleEnter = () => enterDashboard("admin_cabinet");
+  const handleLogin = () => showAuth("login");
+  const handleRegister = () => showAuth("register");
+  const handleBooking = () => showAuth("booking");
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -268,9 +272,12 @@ export function LandingPage() {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         onEnter={handleEnter}
+        onLogin={handleLogin}
+        onRegister={handleRegister}
+        onBooking={handleBooking}
       />
       <main className="flex-1">
-        <Hero onEnter={handleEnter} />
+        <Hero onEnter={handleEnter} onBooking={handleBooking} />
         <Partners />
         <Modules />
         <WhyUs />
@@ -292,10 +299,16 @@ function Header({
   mobileOpen,
   setMobileOpen,
   onEnter,
+  onLogin,
+  onRegister,
+  onBooking,
 }: {
   mobileOpen: boolean;
   setMobileOpen: (v: boolean) => void;
   onEnter: () => void;
+  onLogin: () => void;
+  onRegister: () => void;
+  onBooking: () => void;
 }) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
@@ -317,10 +330,14 @@ function Header({
         </nav>
 
         <div className="hidden items-center gap-2 lg:flex">
-          <Button variant="ghost" size="sm" onClick={onEnter}>
+          <Button variant="outline" size="sm" onClick={onBooking}>
+            <CalendarDays className="h-4 w-4" />
+            Prendre RDV
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onLogin}>
             Connexion
           </Button>
-          <Button size="sm" onClick={onEnter} className="bg-teal-600 hover:bg-teal-700">
+          <Button size="sm" onClick={onRegister} className="bg-teal-600 hover:bg-teal-700">
             Démarrer l'essai
             <ArrowRight className="h-4 w-4" />
           </Button>
@@ -358,11 +375,19 @@ function Header({
               ))}
             </nav>
             <div className="mt-auto flex flex-col gap-2 p-4">
-              <Button variant="outline" onClick={onEnter} className="w-full">
+              <Button
+                variant="outline"
+                onClick={onBooking}
+                className="w-full"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Prendre rendez-vous
+              </Button>
+              <Button variant="outline" onClick={onLogin} className="w-full">
                 Connexion
               </Button>
               <Button
-                onClick={onEnter}
+                onClick={onRegister}
                 className="w-full bg-teal-600 hover:bg-teal-700"
               >
                 Démarrer l'essai
@@ -379,7 +404,7 @@ function Header({
 // ============================================================
 // Hero
 // ============================================================
-function Hero({ onEnter }: { onEnter: () => void }) {
+function Hero({ onEnter, onBooking }: { onEnter: () => void; onBooking: () => void }) {
   return (
     <section
       id="top"
@@ -442,12 +467,28 @@ function Hero({ onEnter }: { onEnter: () => void }) {
               </Button>
               <Button
                 size="lg"
+                onClick={onBooking}
                 variant="outline"
-                asChild
-                className="h-12 text-base"
+                className="h-12 text-base border-orange-300 text-orange-700 hover:bg-orange-50 hover:text-orange-800 dark:border-orange-900/50 dark:text-orange-300 dark:hover:bg-orange-950/30"
               >
-                <a href="#tarifs">Voir les tarifs</a>
+                <CalendarDays className="h-5 w-5" />
+                Prendre rendez-vous
               </Button>
+            </motion.div>
+            <motion.div
+              variants={fadeUp}
+              className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 text-xs text-muted-foreground"
+            >
+              <span>
+                Patient·e·s : RDV en ligne en 2 minutes, confirmation par SMS.
+              </span>
+              <a
+                href="#tarifs"
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                Voir les tarifs
+                <ArrowUpRight className="ml-0.5 inline h-3 w-3" />
+              </a>
             </motion.div>
 
             <motion.div

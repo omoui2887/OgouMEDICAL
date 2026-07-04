@@ -1,0 +1,12 @@
+{
+  "name": "@medisaas/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application Next.js 16 (App Router) — MediSaaS CI frontend",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  }
+}

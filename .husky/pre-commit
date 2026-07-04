@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky-sh"
+
+# MediSaaS CI — pre-commit hook
+echo "🩺 MediSaaS CI — Vérification pre-commit..."
+
+# Lint-staged : formate + lint uniquement les fichiers modifiés
+bunx lint-staged
